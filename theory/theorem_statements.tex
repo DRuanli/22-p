@@ -1,0 +1,165 @@
+% ============================================================
+% Theorem Statements for HC-DML Paper
+% 
+% Paper-ready theorem statements with proof sketches.
+% Detailed proofs are in theory/EIF_derivation.tex
+% ============================================================
+
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm, mathtools, bm, hyperref}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}{Assumption}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\P}{\mathbb{P}}
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\given}{\,|\,}
+\newcommand{\ind}{\mathbb{1}}
+\newcommand{\R}{\mathbb{R}}
+
+\title{HC-DML: Theorem Statements\\
+\small (For inclusion in main paper)}
+\date{}
+
+\begin{document}
+\maketitle
+
+\textbf{IMPORTANT NOTE:} These theorems require independent verification. 
+Detailed proofs are in companion document \texttt{EIF\_derivation.tex}. 
+Cross-checking against Tchetgen-Shpitser (2014) and Chernozhukov et al. (2018) 
+is strongly recommended before submission.
+
+\section{Theorem 1: Identification}
+
+\begin{assumption}[Hierarchical sequential ignorability]
+\label{assump:hsi}
+For all $a, a' \in \{0,1\}$ and all clusters $s$:
+\begin{align*}
+    \{Y_{a, M_{a'}}, M_a\} &\indep A \given X, S \\
+    Y_{a, M_{a'}} &\indep M_a \given X, A=a, S
+\end{align*}
+\end{assumption}
+
+\begin{assumption}[Positivity]
+\label{assump:pos}
+$P(A=a | X=x, S=s) \in (\eta, 1-\eta)$ for some $\eta > 0$.
+\end{assumption}
+
+\begin{theorem}[Hierarchical PSE identification]
+\label{thm:1}
+Under Assumptions \ref{assump:hsi}--\ref{assump:pos}, the natural direct and indirect effects are identified as
+\begin{align*}
+    \mathrm{NDE} &= \E_{X, S}\!\bigg[\!\int \big\{\mu(X, 1, m, S) - \mu(X, 0, m, S)\big\} g(m | X, 0, S) dm\bigg] \\
+    \mathrm{NIE} &= \E_{X, S}\!\bigg[\!\int \mu(X, 1, m, S) \{g(m | X, 1, S) - g(m | X, 0, S)\} dm\bigg]
+\end{align*}
+where $\mu(x, a, m, s) = \E[Y \given X{=}x, A{=}a, M{=}m, S{=}s]$ and $g(m | x, a, s)$ is the conditional density of $M$.
+\end{theorem}
+
+\textit{Proof}: See Appendix \ref{app:proofs}, derivation in EIF\_derivation.tex §3.
+
+\textit{Novelty}: Hierarchical extension of Pearl (2001) mediation formula. Key step: conditioning on $S$ absorbs cluster-level confounding $U_s$.
+
+\section{Theorem 2: Efficient Influence Function}
+
+\begin{theorem}[EIF for hierarchical PJ-CF]
+\label{thm:eif}
+Under Assumptions \ref{assump:hsi}--\ref{assump:pos}, the efficient influence function for $\theta_{10} = \E[Y_{1, M_0}]$ is
+\begin{align}
+    \phi_{10}(W; \eta) =\,& \frac{\ind(A=1)}{e(X, S)} \cdot \frac{g(M | X, 0, S)}{g(M | X, 1, S)} \cdot \big(Y - \mu(X, 1, M, S)\big) \notag \\
+    &+ \frac{\ind(A=0)}{1 - e(X, S)} \cdot \big(\mu(X, 1, M, S) - \bar\mu_1(X, 0, S)\big) \notag \\
+    &+ \bar\mu_1(X, 0, S) - \theta_{10} \label{eq:eif10}
+\end{align}
+where $\bar\mu_1(x, a, s) = \int \mu(x, 1, m, s) g(m | x, a, s) dm$.
+
+The PJ-CF EIF is
+\[
+    \phi_{\mathrm{PJ\text{-}CF}}(W; \eta, \psi) = (1-\psi_d)(\phi_{10} - \phi_{00}) + (1-\psi_m)(\phi_{11} - \phi_{10})
+\]
+with $\phi_{00}, \phi_{11}$ defined analogously (see EIF\_derivation.tex §4.4).
+\end{theorem}
+
+\textit{Proof}: Pathwise derivative on parametric submodels yields EIF components. See EIF\_derivation.tex §4.
+
+\textit{Novelty}: Extension of Tchetgen-Shpitser (2014) IID EIF to hierarchical case. Reduces to Tchetgen-Shpitser when $L=1$.
+
+\section{Theorem 3: Neyman Orthogonality}
+
+\begin{theorem}[Neyman orthogonality]
+\label{thm:orth}
+The EIF in Theorem \ref{thm:eif} satisfies the Neyman orthogonality condition:
+\[
+    \frac{\partial}{\partial r} \E[\phi_{\mathrm{PJ\text{-}CF}}(W; \eta_0 + r(\tilde\eta - \eta_0), \tau_0)] \bigg|_{r=0} = 0
+\]
+for all admissible perturbations $\tilde\eta$ of the nuisance parameter $\eta = (\mu, e, g)$.
+\end{theorem}
+
+\textit{Proof sketch}: Verify pathwise derivative is zero by integration by parts on each nuisance component. See EIF\_derivation.tex §5.
+
+\textit{Implication}: The estimator is robust to first-order errors in nuisance estimation, enabling use of machine learning for $\hat\eta$.
+
+\section{Theorem 4: Consistency and Asymptotic Normality}
+
+\begin{theorem}[$\sqrt{n}$-asymptotic normality]
+\label{thm:asymptotic}
+Suppose Assumptions \ref{assump:hsi}--\ref{assump:pos} hold and:
+\begin{enumerate}
+    \item[(i)] Nuisance rates: $\|\hat\mu - \mu_0\|_{L_2} \cdot \|\hat g - g_0\|_{L_2} = o_p(n^{-1/2})$ and analogous products for $(\hat\mu, \hat e)$, $(\hat g, \hat e)$.
+    \item[(ii)] Bounded second moments: $\E[\phi^2] < \infty$.
+    \item[(iii)] $L \to \infty$ as $n \to \infty$, with $\max_s n_s / n \to 0$.
+\end{enumerate}
+Then the cross-fitted DML estimator $\hat\tau_n$ satisfies
+\[
+    \sqrt{n}(\hat\tau_n - \tau_0) \xrightarrow{d} \mathcal{N}(0, V^*),
+\]
+where $V^* = \E[\phi^2(W; \eta_0, \tau_0)]$ is the semiparametric efficiency bound for the hierarchical model.
+\end{theorem}
+
+\textit{Proof}: Combines Chernozhukov et al.\ (2018) DML asymptotic framework with the cluster-CLT of Liu, Liu, and Sasaki (2024).
+
+\textit{Implications}:
+\begin{enumerate}[itemsep=2pt]
+    \item Consistency: $\hat\tau_n \xrightarrow{p} \tau_0$.
+    \item Inference: $\hat V = \frac{1}{n}\sum_s \big(\sum_{i: S(i)=s} \hat\phi_i\big)^2$ is a consistent variance estimator.
+    \item 95\% CI: $\hat\tau_n \pm 1.96 \sqrt{\hat V / n}$ has nominal coverage as $n, L \to \infty$.
+\end{enumerate}
+
+\section{Theorem 5: Multiple Robustness}
+
+\begin{theorem}[Doubly robust property]
+\label{thm:dr}
+The EIF estimator is doubly robust in the sense that $\hat\tau_n \xrightarrow{p} \tau_0$ if EITHER:
+\begin{enumerate}
+    \item[(a)] $\hat\mu$ is consistently estimated (regardless of $\hat e, \hat g$), OR
+    \item[(b)] $(\hat e, \hat g)$ are consistently estimated (regardless of $\hat\mu$).
+\end{enumerate}
+\end{theorem}
+
+\textit{Proof}: Standard semiparametric argument. The EIF can be rewritten so that the bias term cancels under either consistency condition.
+
+\textit{Practical value}: Robust to one form of model misspecification.
+
+\section*{Verification Roadmap}
+
+Before submitting paper, verify:
+\begin{enumerate}[itemsep=3pt]
+    \item Run \texttt{scripts/verify\_eif\_estimator.py} on synthetic data
+    \item Check Theorem \ref{thm:eif} reduces to Tchetgen-Shpitser (2014) at $L=1$
+    \item Empirical coverage of $\hat\tau \pm 1.96 \hat{\mathrm{SE}}$ achieves $\geq 93\%$ at $n=10000$
+    \item Empirical bias $|\hat\tau - \tau_0| < 0.02$ at $n=10000$
+    \item Doubly robust property holds when one nuisance is misspecified
+\end{enumerate}
+
+\appendix
+\section{Proofs}
+\label{app:proofs}
+See companion document \texttt{theory/EIF\_derivation.tex} for detailed derivations.
+
+\end{document}

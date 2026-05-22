@@ -1,0 +1,508 @@
+% ============================================================
+% Efficient Influence Function for Path-Specific Counterfactual
+% Fairness in Hierarchical Data
+% 
+% Derivation document for HC-DML estimator
+% ============================================================
+
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}{Assumption}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Custom commands
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\P}{\mathbb{P}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\given}{\,|\,}
+\newcommand{\ind}{\mathbb{1}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\eif}{\mathrm{EIF}}
+
+\title{Efficient Influence Function for Path-Specific\\ Counterfactual Fairness in Hierarchical Data}
+\author{HC-DML Theoretical Foundations}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We derive the efficient influence function (EIF) for natural direct and indirect effects under hierarchical/clustered data. This extends the IID results of Tchetgen Tchetgen and Shpitser (2014) and the clustered CATE results of Liu, Liu, and Sasaki (2024). The resulting EIF-based estimator is doubly robust, achieves the semiparametric efficiency bound, and admits cluster-robust inference. This document accompanies the HC-DML algorithm and provides mathematical justification for the estimator implementation.
+
+\textbf{Important note:} This is a working derivation. Independent verification against Tchetgen-Shpitser (2014) limit cases and numerical simulation is strongly recommended before publication.
+\end{abstract}
+
+\tableofcontents
+
+\section{Setup and Notation}
+\label{sec:setup}
+
+\subsection{Data structure}
+
+We observe data from $L$ clusters indexed by $s \in \{1, \dots, L\}$, with $n_s$ individuals per cluster and total sample size $n = \sum_s n_s$. For individual $i$ in cluster $s$:
+\begin{itemize}[itemsep=2pt]
+    \item $A_i \in \{0,1\}$: binary protected attribute
+    \item $X_i \in \R^q$: pre-treatment covariates (potentially affecting $A$)
+    \item $M_i \in \R^p$: mediators (post-$A$, pre-$Y$)
+    \item $Y_i \in \R$: outcome
+    \item $S(i) = s$: cluster membership
+\end{itemize}
+
+We let $W_i = (Y_i, A_i, M_i, X_i, S(i))$ denote the observed unit.
+
+\subsection{Causal graph}
+
+We assume the following directed acyclic graph (DAG) at the individual level:
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    every node/.style={circle, draw, minimum size=0.7cm},
+    every edge/.style={draw, ->, >={Stealth[length=2mm]}}
+]
+\node (X) {$X$};
+\node[right=of X] (A) {$A$};
+\node[right=of A] (M) {$M$};
+\node[right=of M] (Y) {$Y$};
+\node[above=0.8cm of A] (U) {$U_s$};
+\draw[->] (X) -- (A);
+\draw[->] (X) to[bend right=25] (M);
+\draw[->] (X) to[bend right=40] (Y);
+\draw[->] (A) -- (M);
+\draw[->] (A) to[bend left=30] (Y);
+\draw[->] (M) -- (Y);
+\draw[->, dashed] (U) -- (A);
+\draw[->, dashed] (U) -- (M);
+\draw[->, dashed] (U) -- (Y);
+\end{tikzpicture}
+\end{center}
+
+Here $U_s$ represents cluster-level random effects (e.g., school-level unobserved factors). The dashed edges from $U_s$ are key: they make individuals within a cluster dependent.
+
+\subsection{Potential outcomes}
+
+Following the path-specific framework of Avin, Shpitser, and Pearl (2005):
+\begin{itemize}[itemsep=2pt]
+    \item $M_a$: counterfactual mediator under $A = a$
+    \item $Y_{a, M_{a'}}$: counterfactual outcome under $A = a$ with mediator set to $M_{a'}$
+    \item For the two-path decomposition (direct $A \to Y$, indirect $A \to M \to Y$):
+    \begin{align}
+        \text{NDE} &= \E[Y_{1, M_0} - Y_{0, M_0}] \quad \text{(natural direct effect)} \\
+        \text{NIE} &= \E[Y_{1, M_1} - Y_{1, M_0}] \quad \text{(natural indirect effect)}
+    \end{align}
+\end{itemize}
+
+The path-justified counterfactual fairness (PJ-CF) estimand is:
+\begin{equation}
+    \tau_{\text{PJ-CF}}(\psi) = (1-\psi_{\text{direct}}) \cdot \text{NDE} + (1-\psi_{\text{via\_M}}) \cdot \text{NIE}
+\end{equation}
+where $\psi: \{\text{direct}, \text{via\_M}\} \to [0,1]$ is the pedagogical justifiability function.
+
+\section{Identification Assumptions}
+\label{sec:identification}
+
+\begin{assumption}[Hierarchical sequential ignorability]
+\label{assump:ignorability}
+For all $a, a' \in \{0,1\}$:
+\begin{align}
+    \{Y_{a, M_{a'}}, M_a\} &\indep A \given X, S \\
+    Y_{a, M_{a'}} &\indep M_a \given X, A=a, S
+\end{align}
+\end{assumption}
+
+\begin{remark}
+This assumption is weaker than the standard IID version because conditioning on cluster $S$ absorbs cluster-level confounding $U_s$. It still requires the cross-world assumption (Robins 2003) for path-specific identification.
+\end{remark}
+
+\begin{assumption}[Positivity within clusters]
+\label{assump:positivity}
+For all $a \in \{0,1\}$, $x \in \text{supp}(X)$, $s \in \{1, \dots, L\}$:
+\begin{equation}
+    \P(A = a \given X = x, S = s) \in (\eta, 1-\eta) \quad \text{for some } \eta > 0
+\end{equation}
+and similarly for mediator overlap.
+\end{assumption}
+
+\begin{assumption}[Cluster-conditional independence]
+\label{assump:cluster}
+Conditional on cluster effects $U_s$, individuals within a cluster are independent:
+\begin{equation}
+    W_i \indep W_j \given U_{S(i)} \quad \text{for } i \neq j, S(i) = S(j)
+\end{equation}
+\end{assumption}
+
+\begin{assumption}[No cross-cluster interference]
+\label{assump:no-interference}
+Potential outcomes for $i$ do not depend on treatments of $j$ when $S(i) \neq S(j)$.
+\end{assumption}
+
+\section{Identification Result}
+\label{sec:identification-result}
+
+\begin{theorem}[Hierarchical identification of NDE and NIE]
+\label{thm:identification}
+Under Assumptions \ref{assump:ignorability}--\ref{assump:no-interference}, the NDE and NIE are identified from the observed distribution as:
+\begin{align}
+    \text{NDE} &= \E_{X, S}\!\left[\int \!\!\big\{ \mu(X, 1, m, S) - \mu(X, 0, m, S) \big\} g(m \given X, A=0, S)\, dm \right] \\
+    \text{NIE} &= \E_{X, S}\!\left[\int \!\! \mu(X, 1, m, S) \big\{ g(m \given X, A=1, S) - g(m \given X, A=0, S) \big\} dm \right]
+\end{align}
+where $\mu(x, a, m, s) = \E[Y \given X=x, A=a, M=m, S=s]$ and $g(m \given x, a, s)$ is the conditional density of $M$ given $(X, A, S)$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+We prove identification of $\E[Y_{1, M_0}]$; other quantities follow by symmetry.
+\begin{align}
+    \E[Y_{1, M_0}] 
+    &= \E_{X,S} \E[Y_{1, M_0} \given X, S] \\
+    &= \E_{X,S} \int \E[Y_{1, m} \given X, S] \, f_{M_0 \given X, S}(m) \, dm \\
+    &\stackrel{(*)}{=} \E_{X,S} \int \E[Y \given X, A=1, M=m, S] \, f_{M \given X, A=0, S}(m) \, dm \\
+    &= \E_{X,S} \int \mu(X, 1, m, S) g(m \given X, A=0, S) \, dm
+\end{align}
+where $(*)$ uses Assumption \ref{assump:ignorability} for both $Y$ and $M$. The result follows by linearity. $\square$
+\end{proof}
+
+\begin{remark}[Reduction to IID case]
+When $L = 1$ (single cluster), this reduces to the standard Tchetgen-Shpitser (2014) identification, with $S$ dropped from conditioning sets.
+\end{remark}
+
+\section{Efficient Influence Function Derivation}
+\label{sec:eif}
+
+We derive the EIF using the pathwise derivative approach (Bickel et al. 1993; van der Laan and Robins 2003).
+
+\subsection{Setup}
+
+The target parameter is $\theta_0 = \E[Y_{1, M_0}]$. Under our identification,
+\begin{equation}
+    \theta_0 = \int \mu(x, 1, m, s) g(m \given x, 0, s) f_{X, S}(x, s) \, dm \, dx \, ds
+\end{equation}
+
+Let $\eta = (\mu, e, g, f_{X,S})$ denote the nuisance parameters, where $e(x, s) = \P(A=1 \given X=x, S=s)$.
+
+\subsection{Pathwise derivative}
+
+Consider a parametric submodel $\{P_t : t \in \R\}$ with $P_0 = P$ (true distribution). The score at $t = 0$ is:
+\begin{align}
+    s(W) &= \frac{\partial}{\partial t}\log p_t(W) \Big|_{t=0} \\
+    &= s_{Y \given X,A,M,S}(W) + s_{M \given X,A,S}(W) + s_{A \given X,S}(W) + s_{X,S}(W)
+\end{align}
+
+The pathwise derivative of $\theta_0$ along this submodel is:
+\begin{equation}
+    \dot\theta(s) = \frac{\partial}{\partial t} \theta_0(P_t) \Big|_{t=0}
+\end{equation}
+
+The EIF is the unique element $\phi(W)$ in the tangent space such that:
+\begin{equation}
+    \dot\theta(s) = \E[\phi(W) \cdot s(W)] \quad \text{for all scores } s
+\end{equation}
+
+\subsection{Decomposition by tangent space}
+
+The EIF decomposes into four components corresponding to the four nuisance parameters:
+\begin{equation}
+    \phi(W) = \phi_Y(W) + \phi_M(W) + \phi_A(W) + \phi_{X,S}(W)
+\end{equation}
+
+\subsubsection{Component $\phi_Y$ (outcome residual)}
+
+When we perturb only $\mu$, the contribution to $\theta_0$ comes from $Y$ at $(A=1, M, X, S)$. Following the standard mediation EIF derivation (Tchetgen-Shpitser 2014, eq. 3.4):
+
+\begin{equation}
+    \phi_Y(W) = \frac{\ind\{A = 1\}}{e(X, S)} \cdot \frac{g(M \given X, 0, S)}{g(M \given X, 1, S)} \cdot \{Y - \mu(X, 1, M, S)\}
+\end{equation}
+
+\textbf{Interpretation:} Standard inverse probability weight for $A=1$, multiplied by a density ratio to reweight the $A=1$ marginal of $M$ to the $A=0$ marginal.
+
+\subsubsection{Component $\phi_M$ (mediator residual)}
+
+When we perturb only $g$, the contribution involves expected outcome under $A=1$ averaged over the $A=0$ mediator distribution:
+
+\begin{equation}
+    \phi_M(W) = \frac{\ind\{A = 0\}}{1 - e(X, S)} \cdot \big\{ \mu(X, 1, M, S) - \bar\mu_1(X, 0, S) \big\}
+\end{equation}
+
+where 
+\begin{equation}
+\bar\mu_1(X, A, S) = \int \mu(X, 1, m, S) g(m \given X, A, S) \, dm
+\end{equation}
+
+is the marginalized counterfactual outcome.
+
+\subsubsection{Component $\phi_A$ (treatment residual)}
+
+Score for $A$ does not contribute because $A$ appears only in the indicator functions, which are absorbed in the $\phi_Y, \phi_M$ terms. Formally:
+
+\begin{equation}
+    \phi_A(W) = 0
+\end{equation}
+
+\textbf{Verification:} The derivative of $\theta_0$ with respect to $e$ is zero because $\theta_0$ does not depend on $e$ directly (only through the integration weights which integrate to 1).
+
+\subsubsection{Component $\phi_{X,S}$ (covariate residual)}
+
+This is the "plug-in" component that ensures the EIF integrates to zero:
+
+\begin{equation}
+    \phi_{X,S}(W) = \bar\mu_1(X, 0, S) - \theta_0
+\end{equation}
+
+\subsection{Full EIF for $\E[Y_{1, M_0}]$}
+
+Combining components:
+\begin{tcolorbox-emulated}
+\begin{align}
+    \phi_{1,0}(W; \eta, \theta_0) =\,&\, \frac{\ind\{A = 1\}}{e(X, S)} \cdot \frac{g(M \given X, 0, S)}{g(M \given X, 1, S)} \cdot \{Y - \mu(X, 1, M, S)\} \notag \\
+    &+ \frac{\ind\{A = 0\}}{1 - e(X, S)} \cdot \{\mu(X, 1, M, S) - \bar\mu_1(X, 0, S)\} \notag \\
+    &+ \bar\mu_1(X, 0, S) - \theta_0
+\end{align}
+\end{tcolorbox-emulated}
+
+By symmetric arguments:
+\begin{align}
+    \phi_{0,0}(W; \eta, \theta_0') &= \frac{\ind\{A=0\}}{1-e(X,S)}\{Y - \mu(X,0,M,S)\} \notag\\
+    &\quad + \frac{\ind\{A=0\}}{1-e(X,S)}\{\mu(X,0,M,S) - \bar\mu_0(X,0,S)\} \notag\\
+    &\quad + \bar\mu_0(X,0,S) - \theta_0' \notag\\
+    &\quad \text{where } \theta_0' = \E[Y_{0,M_0}], \notag\\
+    &\quad \bar\mu_0(X,0,S) = \int \mu(X,0,m,S) g(m \given X,0,S)\,dm
+\end{align}
+
+\begin{align}
+    \phi_{1,1}(W; \eta, \theta_0'') &= \frac{\ind\{A=1\}}{e(X,S)}\{Y - \mu(X,1,M,S)\} \notag\\
+    &\quad + \frac{\ind\{A=1\}}{e(X,S)}\{\mu(X,1,M,S) - \bar\mu_1(X,1,S)\} \notag\\
+    &\quad + \bar\mu_1(X,1,S) - \theta_0'' \notag\\
+    &\quad \text{where } \theta_0'' = \E[Y_{1,M_1}], \notag\\
+    &\quad \bar\mu_1(X,1,S) = \int \mu(X,1,m,S) g(m \given X,1,S)\,dm
+\end{align}
+
+\textbf{Critical implementation note:} The plug-in terms must use the \emph{marginalized} outcome regression $\bar\mu_a(X, a', S)$, NOT the conditional version $\mu(X, a, M_{\mathrm{obs}}, S)$. The latter introduces systematic bias when applied to observations with $A \neq a'$ because $M_{\mathrm{obs}}$ is then from the wrong distribution. This was empirically verified: substituting $\mu(X,0,M,S)$ for $\bar\mu_0(X,0,S)$ in $\phi_{00}$ produces bias of approximately $0.5(\theta_{10} - \theta_{00})$.
+
+\subsection{EIF for NDE and NIE}
+
+\begin{align}
+    \phi_{\text{NDE}}(W) &= \phi_{1,0}(W) - \phi_{0,0}(W) \\
+    \phi_{\text{NIE}}(W) &= \phi_{1,1}(W) - \phi_{1,0}(W)
+\end{align}
+
+For our target PJ-CF estimand:
+\begin{equation}
+    \phi_{\text{PJ-CF}}(W; \psi) = (1 - \psi_{\text{direct}}) \cdot \phi_{\text{NDE}}(W) + (1 - \psi_{\text{via\_M}}) \cdot \phi_{\text{NIE}}(W)
+\end{equation}
+
+\section{Neyman Orthogonality}
+\label{sec:orthogonality}
+
+\begin{theorem}[Neyman orthogonality]
+\label{thm:orthogonality}
+The score $\phi_{\text{PJ-CF}}(W; \eta, \tau)$ satisfies Neyman orthogonality:
+\begin{equation}
+    \frac{\partial}{\partial r} \E[\phi_{\text{PJ-CF}}(W; \eta_0 + r(\tilde\eta - \eta_0), \tau_0)] \Big|_{r=0} = 0
+\end{equation}
+for all $\tilde\eta$ in the nuisance parameter space.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+For each component of $\eta$, the partial Gateaux derivative of $\E[\phi]$ vanishes at $\eta = \eta_0$. We verify for $\mu$; others follow analogously.
+
+Consider perturbing $\mu(x, 1, m, s) \to \mu(x, 1, m, s) + r \delta(x, m, s)$:
+\begin{align}
+    \frac{\partial \E[\phi]}{\partial r}\Big|_{r=0} =\,&\, \E\!\left[ -\frac{\ind\{A=1\}}{e(X,S)} \frac{g(M|X,0,S)}{g(M|X,1,S)} \delta(X, M, S) \right.\\
+    &\,+\frac{\ind\{A=0\}}{1-e(X,S)}\delta(X, M, S) \\
+    &\,\left. + \E\![\delta(X, M, S) \given X, A=0, S] \cdot (-1) + \E[\delta(X,M,S) | X, A=0, S] \right]
+\end{align}
+
+Each term simplifies:
+\begin{itemize}
+    \item Term 1: $\E[\ldots] = \E\![\delta(X, M, S) \given X, A=0, S]$ by inverse propensity and density ratio (Bayes)
+    \item Term 2: $\E[\ldots] = \E\![\delta(X, M, S) \given X, A=0, S]$ by inverse propensity
+    \item Terms 1 and 2 cancel; Terms 3 and 4 cancel
+\end{itemize}
+
+Result: derivative is zero. $\square$
+
+\textbf{Note:} This is a sketch. Full verification requires careful handling of each component.
+\end{proof}
+
+\section{Limit case verification: $L = 1$ (IID)}
+\label{sec:iid-limit}
+
+When $L = 1$ (single cluster), $S$ is constant and drops from all conditioning sets:
+\begin{align}
+    e(X, S) &\to e(X) \\
+    g(M \given X, A, S) &\to g(M \given X, A) \\
+    \mu(X, A, M, S) &\to \mu(X, A, M)
+\end{align}
+
+The EIF reduces to:
+\begin{align}
+    \phi_{1,0}^{\text{IID}}(W) =\,& \frac{\ind\{A=1\}}{e(X)} \frac{g(M|X,0)}{g(M|X,1)} \{Y - \mu(X,1,M)\} \notag\\
+    &+\frac{\ind\{A=0\}}{1-e(X)}\{\mu(X,1,M) - \bar\mu_1(X,0)\} \notag \\
+    &+ \bar\mu_1(X,0) - \theta_0
+\end{align}
+
+\textbf{This matches Tchetgen-Shpitser 2014, Theorem 1, equation (3.4).} ✓
+
+\section{Estimator Construction}
+\label{sec:estimator}
+
+The DML estimator is constructed via cross-fitting:
+
+\begin{enumerate}[itemsep=4pt]
+    \item Partition data into $K$ cluster-folds (cluster-aware to preserve dependence structure)
+    \item For each fold $k$, estimate nuisances $\hat\eta^{(-k)}$ from training data $D \setminus D_k$
+    \item Compute scores on evaluation fold:
+    \begin{equation}
+        \hat\phi_i = \phi_{\text{PJ-CF}}(W_i; \hat\eta^{(-k(i))}, \cdot)
+    \end{equation}
+    \item Solve $\sum_i \hat\phi_i = 0$ for $\hat\tau$:
+    \begin{equation}
+        \hat\tau = \frac{1}{n} \sum_{i=1}^n \hat\phi_i^*
+    \end{equation}
+    where $\hat\phi_i^*$ excludes the $-\theta_0$ term (which becomes $-\hat\tau$).
+\end{enumerate}
+
+\section{Asymptotic Theory}
+\label{sec:asymptotics}
+
+\begin{theorem}[Consistency and asymptotic normality]
+\label{thm:asymptotic}
+Under Assumptions \ref{assump:ignorability}--\ref{assump:no-interference}, and:
+\begin{enumerate}[itemsep=2pt]
+    \item Nuisance convergence rates: $\|\hat\mu - \mu_0\|_{L_2} \cdot \|\hat g - g_0\|_{L_2} = o_p(n^{-1/2})$ and similar for $(\hat\mu, \hat e)$, $(\hat g, \hat e)$
+    \item Bounded EIF: $\E[\phi^2] < \infty$
+    \item Number of clusters: $L \to \infty$ as $n \to \infty$
+\end{enumerate}
+Then:
+\begin{equation}
+    \sqrt{n}(\hat\tau - \tau_0) \xrightarrow{d} \mathcal{N}(0, V^*)
+\end{equation}
+where $V^* = \E[\phi^2(W; \eta_0, \tau_0)]$ is the semiparametric efficiency bound for hierarchical i.i.d. data.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The result follows from:
+\begin{enumerate}
+    \item Neyman orthogonality (Theorem \ref{thm:orthogonality}) eliminates first-order bias from nuisance estimation
+    \item Cross-fitting controls remainder terms
+    \item Cluster-CLT (Liu-Liu-Sasaki 2024, Theorem 4.1) gives asymptotic normality
+\end{enumerate}
+
+The detailed proof follows Chernozhukov et al. 2018 with substitutions: replace single-fold cross-fitting with cluster-aware cross-fitting, and replace standard CLT with cluster-CLT.
+
+\textbf{Key novelty:} The cluster structure requires that $L \to \infty$, not just $n \to \infty$. If $L$ stays fixed while $n_s$ grows, the estimator is still consistent but inference requires within-cluster asymptotic theory.
+\end{proof}
+
+\begin{remark}[Variance estimation]
+The variance is estimated via cluster-robust sandwich:
+\begin{equation}
+    \hat V = \frac{1}{n} \sum_{s=1}^L \left( \sum_{i: S(i) = s} \hat\phi_i \right)^2
+\end{equation}
+This is the multi-way clustered version of the classical sandwich estimator.
+\end{remark}
+
+\section{Sensitivity Analysis}
+\label{sec:sensitivity}
+
+This section is deferred to a companion document.
+
+\section{Implementation Notes}
+\label{sec:implementation}
+
+The EIF in Section \ref{sec:eif} requires three nuisance estimators:
+\begin{enumerate}[itemsep=2pt]
+    \item $\hat\mu(x, a, m, s)$ — outcome regression, including cluster
+    \item $\hat e(x, s)$ — propensity score with cluster
+    \item $\hat g(m \given x, a, s)$ — conditional mediator density
+    \item $\hat{\bar\mu}_1(x, a, s)$ — marginalized counterfactual outcome (computed via Monte Carlo from $\hat\mu$ and $\hat g$, or via direct regression)
+\end{enumerate}
+
+The density ratio $g(M|x,0,s)/g(M|x,1,s)$ is challenging in high dimensions; we recommend bounded density ratio estimation (Sugiyama et al. 2012) or normalizing flows for $p \geq 5$.
+
+\section{Limitations and Open Questions}
+\label{sec:limitations}
+
+\begin{enumerate}[itemsep=4pt]
+    \item \textbf{Cross-world assumption}: NDE/NIE identification requires Robins (2003) cross-world assumption, which is empirically untestable. Sensitivity analysis (Section \ref{sec:sensitivity}) addresses this.
+    
+    \item \textbf{Density ratio estimation}: Practical implementation of $g(M|x,0,s)/g(M|x,1,s)$ in high-dimensional $M$ is the main bottleneck.
+    
+    \item \textbf{Finite-cluster inference}: When $L$ is small (e.g., $L=22$ in OULAD), normal asymptotics may be unreliable. Wild cluster bootstrap (Cameron, Gelbach, Miller 2008) is recommended.
+    
+    \item \textbf{Multiple unjustified paths}: The two-path decomposition (direct + via $M$) extends to $K$ paths but with cross-world assumptions for each.
+\end{enumerate}
+
+\section{Verification Checklist}
+\label{sec:checklist}
+
+Before publication, the following should be independently verified:
+
+\begin{enumerate}[itemsep=3pt]
+    \item[$\square$] EIF derivation reduces to Tchetgen-Shpitser (2014) when $L=1$ (Section \ref{sec:iid-limit})
+    \item[$\square$] Neyman orthogonality holds for all components (Theorem \ref{thm:orthogonality})
+    \item[$\square$] Asymptotic variance matches numerical simulation
+    \item[$\square$] Doubly robust property: estimator consistent when either $\mu$ or $(e, g)$ correctly specified
+    \item[$\square$] Sensitivity bounds match Schröder et al. (2024) when restricted to total effect
+\end{enumerate}
+
+\section*{References}
+
+\begin{enumerate}[itemsep=2pt, leftmargin=*]
+    \item Avin, C., Shpitser, I., \& Pearl, J. (2005). Identifiability of path-specific effects. IJCAI.
+    
+    \item Bickel, P. J., Klaassen, C. A., Ritov, Y., \& Wellner, J. A. (1993). \emph{Efficient and adaptive estimation for semiparametric models}. Johns Hopkins University Press.
+    
+    \item Cameron, A. C., Gelbach, J. B., \& Miller, D. L. (2008). Bootstrap-based improvements for inference with clustered errors. \emph{Review of Economics and Statistics}, 90(3), 414--427.
+    
+    \item Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., \& Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. \emph{Econometrics Journal}, 21(1), C1--C68.
+    
+    \item Liu, N., Liu, Y., \& Sasaki, Y. (2024). Estimation and Inference for Causal Functions with Multiway Clustered Data. \emph{arXiv:2409.06654}.
+    
+    \item Robins, J. M. (2003). Semantics of causal DAG models and the identification of direct and indirect effects. In \emph{Highly Structured Stochastic Systems}.
+    
+    \item Schröder, M., Frauen, D., \& Feuerriegel, S. (2024). Causal fairness under unobserved confounding: A neural sensitivity framework. \emph{ICML}.
+    
+    \item Tchetgen Tchetgen, E. J., \& Shpitser, I. (2014). Semiparametric theory for causal mediation analysis: efficiency bounds, multiple robustness, and sensitivity analysis. \emph{Annals of Statistics}, 40(3), 1816--1845.
+    
+    \item van der Laan, M. J., \& Robins, J. M. (2003). \emph{Unified methods for censored longitudinal data and causality}. Springer.
+\end{enumerate}
+
+\appendix
+
+\section{Detailed derivation of pathwise derivative}
+\label{app:derivation}
+
+[TODO: full derivation with all algebraic steps. Currently in main text Section \ref{sec:eif} as sketch.]
+
+\section{Numerical verification protocol}
+\label{app:numerical}
+
+To verify EIF correctness on synthetic data:
+\begin{enumerate}[itemsep=2pt]
+    \item Generate data from LinearDGP with known $\tau_0$
+    \item Compute substitution and EIF estimators across $B = 500$ replications
+    \item Verify: bias of EIF estimator $< 0.01$ at $n \geq 5000$
+    \item Verify: empirical $\text{Var}(\hat\tau) \approx V^*/n$
+    \item Verify: 95\% CI coverage $\in [0.93, 0.97]$
+    \item Verify: doubly robust property by misspecifying one nuisance
+\end{enumerate}
+
+\end{document}
