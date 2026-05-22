@@ -33,6 +33,8 @@ import time
 import numpy as np
 import pandas as pd
 
+OULAD_PATH = os.environ.get('OULAD_PATH', '/Users/lenguyen/Documents/26-Research/unknown/hcdml_project/oulad_data')
+
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/..'))
 
@@ -41,7 +43,7 @@ from algorithms.hcdml_eif_kde import patch_kde_support
 patch_kde_support()
 
 from algorithms.hcdml_eif import HCDMLEstimatorEIF
-from loaders.loaders_oulad import load_oulad
+from data.loaders_oulad import load_oulad
 
 
 def main():
@@ -55,7 +57,8 @@ def main():
     # Load OULAD
     print("\n[1/4] Loading OULAD...")
     t0 = time.time()
-    data = load_oulad()  # uses default DAG
+    data = load_oulad(OULAD_PATH, protected='gender', outcome='pass_distinction',
+                aggregate_clicks_by='cumulative', min_assessments=1, verbose=False,)  # uses default DAG
     print(f"  n={len(data['Y'])}, L={len(np.unique(data['S']))}, M dim={data['M'].shape[1]}")
     print(f"  Load time: {time.time() - t0:.1f}s")
     

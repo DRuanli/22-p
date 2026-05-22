@@ -56,8 +56,9 @@ import pandas as pd
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/..'))
 
 from algorithms.hcdml_eif import HCDMLEstimatorEIF
-from loaders.loaders_oulad import load_oulad
+from data.loaders_oulad import load_oulad
 
+OULAD_PATH = os.environ.get('OULAD_PATH', '/Users/lenguyen/Documents/26-Research/unknown/hcdml_project/oulad_data')
 
 def reassign_variable_to_M(data, var_name, source='X', target='M'):
     """
@@ -163,7 +164,8 @@ def main():
     
     # Load OULAD with default DAG
     print("\n[Loading OULAD with default DAG]")
-    data_default = load_oulad()
+    data = load_oulad(OULAD_PATH, protected='gender', outcome='pass_distinction',
+                aggregate_clicks_by='cumulative', min_assessments=1, verbose=False,)  # uses default DAG
     print(f"  X vars ({len(data_default.get('feature_names_X', []))}): {data_default.get('feature_names_X')}")
     print(f"  M vars ({len(data_default.get('feature_names_M', []))}): {data_default.get('feature_names_M')}")
     
