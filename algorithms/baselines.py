@@ -167,16 +167,21 @@ class NaivePlugIn:
         if self.bootstrap_n > 0:
             boot_estimates = []
             rng = np.random.default_rng(42)
-            for b in range(self.bootstrap_n):
-                idx = rng.integers(0, n, size=n)
-                boot_result = NaivePlugIn(
-                    paths=self.paths, psi=self.psi, 
-                    outcome_model=self.outcome_model, bootstrap_n=0
-                ).fit(Y[idx], A[idx], M[idx], X[idx], S[idx] if S is not None else None)
-                boot_estimates.append(boot_result.tau_pj_cf)
+            # Inner fits use bootstrap_n=0 and will emit the "SE collapsed"
+            # warning each time for linear outcomes; that's expected here
+            # because we use their point estimates only.
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                for b in range(self.bootstrap_n):
+                    idx = rng.integers(0, n, size=n)
+                    boot_result = NaivePlugIn(
+                        paths=self.paths, psi=self.psi,
+                        outcome_model=self.outcome_model, bootstrap_n=0
+                    ).fit(Y[idx], A[idx], M[idx], X[idx], S[idx] if S is not None else None)
+                    boot_estimates.append(boot_result.tau_pj_cf)
             se = float(np.std(boot_estimates))
         else:
-            # Naive SE (assumes IID): use sample-level variance
+            # Naive SE (assumes IID): use sample-level variance.
             scores = np.zeros(n)
             for p in self.paths:
                 if p == 'direct':
@@ -184,8 +189,20 @@ class NaivePlugIn:
                 elif p == 'via_M':
                     scores += (1 - self.psi.get(p, 0.0)) * (Y_0_M1 - Y_0_M0)
             se = float(np.std(scores, ddof=1) / np.sqrt(n))
-        
-        if se > 0:
+            # Linear outcome models make per-obs NDE/NIE constant across i, so
+            # the score variance collapses and SE looks like a true zero. That
+            # is a degeneracy of the formula, not a precise estimate — surface
+            # it as NaN so callers don't build zero-width CIs and report 0%
+            # coverage. Set bootstrap_n > 0 for valid inference.
+            if se < 1e-10:
+                warnings.warn(
+                    "NaivePlugIn naive SE collapsed to ~0 (linear outcome makes "
+                    "per-observation NDE/NIE constant). Pass bootstrap_n>0 for "
+                    "valid inference."
+                )
+                se = float('nan')
+
+        if not np.isnan(se) and se > 0:
             ci_lower = tau_pj_cf - 1.96 * se
             ci_upper = tau_pj_cf + 1.96 * se
             p_value = 2 * (1 - stats.norm.cdf(abs(tau_pj_cf) / se))
@@ -418,19 +435,24 @@ class ChiappaVAE:
         if self.bootstrap_n > 0 and n > 100:
             boot_estimates = []
             rng = np.random.default_rng(42)
-            for b in range(self.bootstrap_n):
-                idx = rng.integers(0, n, size=n)
-                try:
-                    boot = ChiappaVAE(
-                        paths=self.paths, psi=self.psi,
-                        latent_dim=self.latent_dim, bootstrap_n=0
-                    ).fit(Y[idx], A[idx], M[idx], X[idx])
-                    boot_estimates.append(boot.tau_pj_cf)
-                except Exception:
-                    continue
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                for b in range(self.bootstrap_n):
+                    idx = rng.integers(0, n, size=n)
+                    try:
+                        boot = ChiappaVAE(
+                            paths=self.paths, psi=self.psi,
+                            latent_dim=self.latent_dim, bootstrap_n=0
+                        ).fit(Y[idx], A[idx], M[idx], X[idx])
+                        boot_estimates.append(boot.tau_pj_cf)
+                    except Exception:
+                        continue
             se = float(np.std(boot_estimates)) if boot_estimates else float('nan')
         else:
-            # Simple SE from scores
+            # Simple SE from scores. ChiappaVAE's final regression is linear
+            # (Ridge), so per-observation NDE/NIE are constant across i and
+            # this collapses to ~0 — surface as NaN with a warning rather than
+            # producing a misleading zero-width CI.
             scores = np.zeros(n)
             for p in self.paths:
                 if p == 'direct':
@@ -438,6 +460,13 @@ class ChiappaVAE:
                 elif p == 'via_M':
                     scores += (1 - self.psi.get(p, 0.0)) * (Y_0_M1 - Y_0_M0)
             se = float(np.std(scores, ddof=1) / np.sqrt(n))
+            if se < 1e-10:
+                warnings.warn(
+                    "ChiappaVAE naive SE collapsed to ~0 (Ridge outcome makes "
+                    "per-observation NDE/NIE constant). Pass bootstrap_n>0 for "
+                    "valid inference."
+                )
+                se = float('nan')
         
         if se > 0 and not np.isnan(se):
             ci_lower = tau_pj_cf - 1.96 * se
