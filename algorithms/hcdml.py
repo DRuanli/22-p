@@ -176,7 +176,29 @@ class HCDMLEstimator:
         self.use_cluster_features = use_cluster_features
         self.verbose = verbose
         self.random_state = random_state
-    
+
+    # ─── sklearn-compatible parameter access (needed for bootstrap / sensitivity) ───
+
+    def get_params(self, deep=True):
+        return {
+            'paths': self.paths,
+            'psi': self.psi,
+            'n_folds': self.n_folds,
+            'n_cluster_folds': self.n_cluster_folds,
+            'outcome_learner': self.outcome_learner,
+            'propensity_learner': self.propensity_learner,
+            'mediator_method': self.mediator_method,
+            'clip_weights': self.clip_weights,
+            'use_cluster_features': self.use_cluster_features,
+            'verbose': self.verbose,
+            'random_state': self.random_state,
+        }
+
+    def set_params(self, **params):
+        for k, v in params.items():
+            setattr(self, k, v)
+        return self
+
     # ─────────────────────────────────────────────────────────────────────
     # Phase 1: Hierarchical Partitioning
     # ─────────────────────────────────────────────────────────────────────
@@ -492,7 +514,14 @@ class HCDMLEstimator:
                 M_a0_pred[:, j] = m_models[j].predict(feats_A0)
                 M_a1_pred[:, j] = m_models[j].predict(feats_A1)
         else:
-            # Fallback: use observed M (only valid for direct effect approximation)
+            # Fallback: use observed M (only valid for direct effect approximation).
+            # With M_a0 == M_a1, NIE = Y_0_M1 - Y_0_M0 = 0 by construction — warn the
+            # caller so a zero NIE isn't read as a substantive finding.
+            if 'via_M' in self.paths:
+                warnings.warn(
+                    "Mediator density unavailable; NIE will be 0 by construction. "
+                    "Interpret 'via_M' estimate as unidentified, not as a true null."
+                )
             M_a0_pred = M_eval.copy()
             M_a1_pred = M_eval.copy()
         

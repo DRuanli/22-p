@@ -224,8 +224,13 @@ def bootstrap_estimator(
         elif method == 'cluster':
             boot_idx = _cluster_bootstrap_sample(S, rng)
         elif method == 'wild_cluster':
-            # For wild cluster bootstrap, we use Rademacher weights
-            # but applied to the score residuals. For now, default to cluster bootstrap.
+            # Wild cluster bootstrap is not implemented; fall back to cluster
+            # bootstrap but warn so callers aren't silently misled.
+            if b == 0:
+                warnings.warn(
+                    "method='wild_cluster' is not implemented; falling back to "
+                    "cluster bootstrap. Results will be labelled accordingly."
+                )
             boot_idx = _cluster_bootstrap_sample(S, rng)
         else:
             raise ValueError(f"Unknown method: {method}")
@@ -309,7 +314,7 @@ def bootstrap_estimator(
         p_value=p_value,
         n_bootstrap=len(bootstrap_estimates),
         n_failed=n_failed,
-        bootstrap_method=method,
+        bootstrap_method=('cluster' if method == 'wild_cluster' else method),
         bootstrap_estimates=bootstrap_estimates,
     )
 

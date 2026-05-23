@@ -446,11 +446,7 @@ class HCDMLEstimatorEIF:
         pi = e_fn(X, S)
         pi = np.clip(pi, self.clip_propensity, 1 - self.clip_propensity)
         
-        # Outcome model at observed (A, M) and counterfactual settings
-        # NOTE: When A is missing, we use a fallback. Better: imputed value.
-        A_obs = np.where(valid_A, A, 0).astype(float)
-        
-        mu_obs = mu_fn(X, A_obs, M, S)  # μ(X, A, M, S) at observed A
+        # Outcome model at counterfactual A settings.
         mu_at_A0 = mu_fn(X, np.zeros(n), M, S)  # μ(X, 0, M, S)
         mu_at_A1 = mu_fn(X, np.ones(n), M, S)   # μ(X, 1, M, S)
         

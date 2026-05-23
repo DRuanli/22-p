@@ -429,9 +429,31 @@ def confounding_sensitivity_analysis(
         M = M.reshape(-1, 1)
     
     estimator._all_clusters = np.unique(S)
-    mu_fn = estimator._fit_outcome(Y, X, A, M, S)
+    # HCDMLEstimatorEIF exposes `_fit_outcome`; HCDMLEstimator exposes `_fit_outcome_model`.
+    if hasattr(estimator, '_fit_outcome'):
+        mu_fn = estimator._fit_outcome(Y, X, A, M, S)
+    else:
+        mu_fn = estimator._fit_outcome_model(Y, X, A, M, S)
     e_fn = estimator._fit_propensity(A, X, S)
-    density_fn, sample_fn, ratio_fn = estimator._fit_mediator_density(M, A, X, S)
+    density_out = estimator._fit_mediator_density(M, A, X, S)
+    # EIF returns (density, sample, ratio); substitution returns (ratio, models, vars).
+    if len(density_out) == 3 and callable(density_out[1]):
+        density_fn, sample_fn, ratio_fn = density_out
+    else:
+        ratio_fn, m_models, m_resid_vars = density_out
+        density_fn = None
+        if m_models and m_resid_vars:
+            def sample_fn(X_, A_, S_, rng, _models=m_models, _vars=m_resid_vars):
+                feats = estimator._prep_features(X_, S_, A=A_)
+                M_samples = np.zeros((len(X_), len(_models)))
+                for j, mdl in enumerate(_models):
+                    mean_j = mdl.predict(feats)
+                    M_samples[:, j] = mean_j + rng.normal(
+                        0, np.sqrt(_vars[j]), size=len(X_)
+                    )
+                return M_samples
+        else:
+            sample_fn = None
     
     # Build mu_bar function (marginalized)
     rng = np.random.default_rng(42)
@@ -442,7 +464,12 @@ def confounding_sensitivity_analysis(
         n_x = len(X_)
         a_med_arr = np.full(n_x, a_med, dtype=float)
         a_out_arr = np.full(n_x, a_out, dtype=float)
-        
+
+        if sample_fn is None:
+            # No mediator-sampling available — fall back to evaluating μ at observed M.
+            # This collapses cross-world marginalization; bounds will be less tight.
+            return mu_fn(X_, a_out_arr, M, S_)
+
         mu_accum = np.zeros(n_x)
         for _ in range(n_mc):
             M_prime = sample_fn(X_, a_med_arr, S_, rng)
