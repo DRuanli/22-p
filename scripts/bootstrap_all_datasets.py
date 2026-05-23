@@ -53,7 +53,10 @@ except ImportError:
 # CONFIG
 # =========================================================================
 
-DATA_DIR = os.environ.get('DATA_DIR', '/mnt/user-data/uploads')
+DATA_DIR = os.environ.get(
+    'DATA_DIR',
+    os.path.join(os.path.dirname(__file__), '..', 'data')
+)
 OULAD_PATH = os.environ.get('OULAD_PATH', '~/oulad_data')
 OULAD_PATH = os.path.expanduser(OULAD_PATH)
 LAW_PATH = os.environ.get(

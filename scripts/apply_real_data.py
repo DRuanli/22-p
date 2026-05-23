@@ -44,8 +44,12 @@ from baselines import NaivePlugIn, SingleLevelDML, ChiappaVAE
 # CONFIGURATION — UPDATE THESE PATHS
 # =========================================================================
 
-# Update to your local paths
-DATA_DIR = '/mnt/user-data/uploads'  # Where the CSV files are
+# Default to the in-repo data/ directory; override with DATA_DIR env var if
+# your CSVs live elsewhere.
+DATA_DIR = os.environ.get(
+    'DATA_DIR',
+    os.path.join(os.path.dirname(__file__), '..', 'data')
+)
 
 PATH_UCI_MATH = os.path.join(DATA_DIR, 'student-mat.csv')
 PATH_UCI_POR = os.path.join(DATA_DIR, 'student-por.csv')

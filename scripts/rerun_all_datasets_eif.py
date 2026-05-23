@@ -69,8 +69,11 @@ except ImportError:
 # CONFIG
 # =========================================================================
 
-DATA_DIR = os.environ.get('DATA_DIR', '/Users/lenguyen/Documents/26-Research/unknown/hcdml_project/data')
-OULAD_PATH = os.path.expanduser(os.environ.get('OULAD_PATH', '/Users/lenguyen/Documents/26-Research/unknown/hcdml_project/oulad_data'))
+DATA_DIR = os.environ.get(
+    'DATA_DIR',
+    os.path.join(os.path.dirname(__file__), '..', 'data')
+)
+OULAD_PATH = os.path.expanduser(os.environ.get('OULAD_PATH', '~/oulad_data'))
 LAW_PATH = os.environ.get(
     'LAW_PATH',
     os.path.join(os.path.dirname(__file__), '..', 'data', 'law_data.csv')
