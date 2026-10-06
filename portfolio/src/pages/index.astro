@@ -1,0 +1,26 @@
+---
+import Base from "../layouts/Base.astro";
+import Hero from "../components/Hero.astro";
+import About from "../components/About.astro";
+import Affiliations from "../components/Affiliations.astro";
+import Journeys from "../components/Journeys.astro";
+import Teaching from "../components/Teaching.astro";
+import WhatIDo from "../components/WhatIDo.astro";
+import Footer from "../components/Footer.astro";
+import { person } from "../data/site";
+// "Words from others" and FAQ are left out until docs/content.md has real quotes and answers.
+---
+<Base
+  title={`${person.name}, researcher and English teacher`}
+  description="Dang Nguyen Le: data mining and educational machine learning researcher at Ton Duc Thang University, English teacher in Ho Chi Minh City."
+>
+  <Hero />
+  <main id="main">
+    <About />
+    <Affiliations />
+    <Journeys />
+    <Teaching />
+    <WhatIDo />
+  </main>
+  <Footer />
+</Base>

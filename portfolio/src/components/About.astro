@@ -1,0 +1,85 @@
+---
+import { facts, person } from "../data/site";
+import { existsSync } from "node:fs";
+const base = import.meta.env.BASE_URL;
+// Drop a photo at public/portrait.jpg and it replaces the monogram on the next build.
+const hasPortrait = existsSync("public/portrait.jpg");
+---
+<section class="section about" id="about" aria-labelledby="about-h">
+  <div class="wrap about__grid">
+    <div class="about__portrait" data-parallax>
+      {hasPortrait
+        ? <img class="about__img" data-parallax-inner src={`${base}portrait.jpg`} alt={`Portrait of ${person.name}`} />
+        : <div class="about__mono" data-parallax-inner aria-hidden="true">DN</div>}
+    </div>
+
+    <div class="about__text">
+      <h2 id="about-h" data-reveal>Hello, I'm Dang <em>Nguyen</em>.</h2>
+      <p class="lede">
+        I study data mining and machine learning at Ton Duc Thang University in {person.location.split(",")[0]}.
+        My papers appear under the name {person.publishedAs}.
+      </p>
+
+      <div class="facts" data-facts>
+        <div class="facts__viewport">
+          <ul class="facts__track">
+            {facts.map((f, i) => (
+              <li class="facts__slide" aria-roledescription="slide" aria-label={`${i + 1} of ${facts.length}`}>
+                <h3>{f.title}</h3>
+                <p>{f.body}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div class="facts__dots" role="group" aria-label="Choose a fact">
+          {facts.map((f, i) => (
+            <button type="button" data-dot={i} aria-label={`Show: ${f.title}`}></button>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about__grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); gap: var(--space-xl); align-items: center; }
+  .about__portrait {
+    aspect-ratio: 4 / 5; border-radius: var(--r-media); overflow: hidden;
+    background: var(--danube);
+  }
+  .about__img { width: 100%; height: 116%; margin-top: -8%; object-fit: cover; display: block; }
+  .about__mono {
+    height: 116%; margin-top: -8%;
+    display: grid; place-items: center;
+    font-family: var(--serif); font-style: italic; font-size: clamp(6rem, 18vw, 14rem);
+    color: var(--silt-soft);
+    background:
+      radial-gradient(120% 70% at 20% 110%, #10261f 0 40%, transparent 41%),
+      var(--danube);
+  }
+  .about__text h2 { margin-bottom: 1.25rem; }
+  .facts { margin-top: var(--space-l); }
+  .facts__viewport { overflow: hidden; }
+  .facts__track { display: flex; list-style: none; margin: 0; padding: 0; touch-action: pan-y pinch-zoom; }
+  .facts__slide {
+    flex: 0 0 100%; min-width: 0; padding-right: 2rem;
+    border-top: 1px solid var(--reed); padding-top: 1.25rem;
+  }
+  .facts__slide h3 { margin-bottom: 0.6rem; }
+  .facts__slide p { max-width: 48ch; color: var(--ink-muted); }
+  .facts__dots { display: flex; gap: 0.25rem; margin-top: 1.5rem; }
+  .facts__dots button {
+    width: 2.75rem; height: 2.75rem; border: 0; background: none; cursor: pointer; padding: 0;
+    display: grid; place-items: center;
+  }
+  .facts__dots button::before {
+    content: ""; width: 0.6rem; height: 0.6rem; border-radius: 50%;
+    background: var(--reed-light); transition: transform 0.3s var(--ease-out), background 0.3s;
+  }
+  .facts__dots button[aria-current="true"]::before { background: var(--silt); transform: scale(1.4); }
+
+  @media (max-width: 860px) {
+    .about__grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-l); }
+    .about__portrait { max-width: 22rem; aspect-ratio: 1; }
+  }
+</style>

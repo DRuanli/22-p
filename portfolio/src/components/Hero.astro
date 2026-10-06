@@ -1,0 +1,86 @@
+---
+import { person } from "../data/site";
+---
+<header class="hero" data-hero>
+  <nav class="hero__nav wrap" aria-label="Primary">
+    <a class="hero__name" href="#top">{person.name}</a>
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#journeys">Research</a></li>
+      <li><a href="#teaching">Teaching</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="hero__body wrap" id="top">
+    <div class="hero__text">
+      <h1 data-hero-title>Finding what still holds in imperfect <em>data</em>.</h1>
+      <p class="hero__line" data-hero-fade>{person.role}</p>
+      <a class="btn" href="#journeys" data-hero-fade>See my work</a>
+    </div>
+
+    <figure class="hero__route" aria-labelledby="route-cap">
+      <svg viewBox="0 0 520 420" role="img" aria-hidden="true">
+        <defs>
+          <clipPath id="route-clip">
+            <rect data-route-mask x="0" y="0" width="520" height="420" />
+          </clipPath>
+        </defs>
+        <g clip-path="url(#route-clip)">
+          <path class="route__water" d="M40 372 C 80 360, 96 330, 128 318 S 220 250, 270 190 S 400 70, 470 52" />
+          <path class="route__line" d="M40 372 C 80 360, 96 330, 128 318 S 220 250, 270 190 S 400 70, 470 52" />
+        </g>
+        <g class="route__stops">
+          <g data-stop transform="translate(40 372)"><circle r="7" /><text x="16" y="24">Can Tho</text><text class="yr" x="16" y="44">2019</text></g>
+          <g data-stop transform="translate(128 318)"><circle r="7" /><text x="16" y="-28">Ho Chi Minh City</text><text class="yr" x="16" y="-8">2022, 2026</text></g>
+          <g data-stop transform="translate(470 52)"><circle r="7" /><text x="-12" y="40" text-anchor="end">Regensburg</text><text class="yr" x="-12" y="60" text-anchor="end">2024</text></g>
+        </g>
+      </svg>
+      <figcaption id="route-cap" class="visually-hidden">
+        Route from Can Tho (school, from 2019) to Ho Chi Minh City (university, 2022) to Regensburg, Germany (exchange, 2024), and back to Ho Chi Minh City (researcher, 2026).
+      </figcaption>
+    </figure>
+  </div>
+</header>
+
+<style>
+  .hero {
+    background: var(--deep);
+    color: var(--mist);
+    min-height: 100svh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .hero__nav {
+    display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+    padding-block: 1.5rem;
+  }
+  .hero__name { font-family: var(--serif); font-size: 1.25rem; text-decoration: none; }
+  .hero__nav ul { display: flex; gap: 1.5rem; list-style: none; margin: 0; padding: 0; }
+  .hero__nav ul a { text-decoration: none; color: var(--reed-light); }
+  .hero__nav ul a:hover { color: var(--mist); }
+
+  .hero__body {
+    flex: 1;
+    display: grid; grid-template-columns: 1.15fr 1fr; align-items: center;
+    gap: var(--space-l);
+    padding-block: var(--space-l) var(--space-xl);
+  }
+  h1 { font-size: var(--step-5); max-width: 11ch; }
+  h1 :global(em) { color: var(--silt-soft); }
+  .hero__line { margin-block: 1.75rem 2.25rem; max-width: 34ch; color: var(--reed-light); font-size: var(--step-1); line-height: 1.45; }
+
+  .hero__route { margin: 0; }
+  .hero__route svg { width: 100%; height: auto; overflow: visible; }
+  .route__water { fill: none; stroke: var(--danube); stroke-width: 22; stroke-linecap: round; opacity: 0.55; }
+  .route__line { fill: none; stroke: var(--silt); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 2 10; }
+  .route__stops circle { fill: var(--mist); stroke: var(--silt); stroke-width: 3; }
+  .route__stops text { fill: var(--mist); font-family: var(--serif); font-size: 22px; }
+  .route__stops text.yr { fill: var(--reed-light); font-family: var(--sans); font-size: 15px; }
+
+  @media (max-width: 860px) {
+    .hero__nav ul { display: none; }
+    .hero__body { grid-template-columns: minmax(0, 1fr); align-content: start; }
+    .hero__route { max-width: 30rem; }
+  }
+</style>

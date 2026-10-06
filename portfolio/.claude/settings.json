@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/scripts/session-start.sh",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npm install*)",
+      "Bash(npm ci)",
+      "Bash(npx astro *)",
+      "Bash(npx playwright *)",
+      "Bash(node scripts/*)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}

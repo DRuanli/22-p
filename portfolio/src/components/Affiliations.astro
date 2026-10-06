@@ -1,0 +1,15 @@
+---
+import { affiliations } from "../data/site";
+---
+<section class="aff" aria-label="Institutions and journals">
+  <ul class="wrap">
+    {affiliations.map((a) => <li>{a}</li>)}
+  </ul>
+</section>
+
+<style>
+  .aff { border-block: 1px solid var(--reed-light); padding-block: 1.75rem; }
+  ul { list-style: none; margin-block: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 2.5rem; }
+  li { font-family: var(--serif); font-size: var(--step-1); color: var(--danube); }
+  li:nth-child(n + 5) { font-style: italic; }
+</style>

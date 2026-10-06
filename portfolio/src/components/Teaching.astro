@@ -1,0 +1,49 @@
+---
+const ladder = [
+  { name: "Flyers", note: "Cambridge Young Learners" },
+  { name: "PET", note: "B1 Preliminary" },
+  { name: "IELTS", note: "Academic and General" },
+];
+---
+<section class="section teaching" id="teaching" aria-labelledby="teaching-h">
+  <div class="wrap teaching__grid">
+    <div class="teaching__text">
+      <h2 id="teaching-h" data-reveal>From Flyers to <em>IELTS</em></h2>
+      <p class="lede">
+        I have taught English since 2023 at MAC English centre in Ho Chi Minh City, to primary,
+        lower-secondary and upper-secondary learners.
+      </p>
+      <p>
+        My current offline classes prepare students for Flyers, PET and IELTS. Through my exchange
+        semester in Germany I kept teaching online.
+      </p>
+    </div>
+
+    <div class="ladder" data-parallax aria-label="Exam classes I teach">
+      <ol data-parallax-inner>
+        {ladder.map((l) => (
+          <li><span class="ladder__name">{l.name}</span><span class="ladder__note">{l.note}</span></li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  .teaching__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-xl); align-items: center; }
+  .teaching__text h2 { margin-bottom: 1.5rem; max-width: 12ch; }
+  .teaching__text p + p { margin-top: 1rem; max-width: 46ch; }
+
+  .ladder { background: var(--danube); color: var(--mist); border-radius: var(--r-media); overflow: hidden; padding: clamp(1.5rem, 4vw, 3rem); }
+  .ladder ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+  .ladder li { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-bottom: 1px solid #5a7a92; padding-block: 0.75rem; }
+  .ladder li:last-child { border-bottom: 0; }
+  .ladder li:nth-child(2) { padding-left: 12%; }
+  .ladder li:nth-child(3) { padding-left: 24%; }
+  .ladder__name { font-family: var(--serif); font-size: var(--step-4); line-height: 1; }
+  .ladder__note { color: #c7d5df; font-size: var(--step--1); }
+
+  @media (max-width: 860px) {
+    .teaching__grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-l); }
+  }
+</style>

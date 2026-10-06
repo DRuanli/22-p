@@ -1,0 +1,64 @@
+@import "./tokens.css";
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+body {
+  margin: 0;
+  background: var(--mist);
+  color: var(--deep);
+  font-family: var(--sans);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  overflow-x: clip;
+}
+
+h1, h2, h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  margin: 0;
+  font-optical-sizing: auto;
+}
+h2 { font-size: var(--step-4); }
+h3 { font-size: var(--step-2); line-height: 1.15; }
+h2 em, h1 em { font-style: italic; color: var(--silt); }
+p { margin: 0; }
+
+a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 3px solid var(--silt); outline-offset: 3px; border-radius: 4px; }
+
+.wrap { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--gutter); }
+.section { padding-block: var(--space-xl); }
+.lede { font-size: var(--step-1); line-height: 1.5; max-width: 34ch; color: var(--ink-muted); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.6em;
+  padding: 0.85em 1.5em;
+  border-radius: var(--r-pill);
+  background: var(--silt); color: var(--deep);
+  font-weight: 600; text-decoration: none;
+  transition: background 0.3s var(--ease-out);
+}
+.btn:hover { background: var(--silt-soft); }
+
+.icon-btn {
+  width: 3rem; height: 3rem; border-radius: var(--r-pill);
+  border: 1px solid currentColor; background: transparent; color: inherit;
+  display: grid; place-items: center; cursor: pointer;
+  transition: background 0.3s, color 0.3s, opacity 0.3s;
+}
+.icon-btn:hover:not(:disabled) { background: var(--deep); color: var(--mist); }
+.icon-btn:disabled { opacity: 0.3; cursor: default; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+.skip { position: absolute; left: 1rem; top: -4rem; z-index: 10; background: var(--silt); color: var(--deep); padding: 0.5rem 1rem; border-radius: var(--r-pill); }
+.skip:focus { top: 1rem; }
