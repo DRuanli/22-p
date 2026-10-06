@@ -1,0 +1,38 @@
+---
+import { faq } from "../data/site";
+---
+<section class="section faq" id="faq" aria-labelledby="faq-h">
+  <div class="wrap faq__grid">
+    <div>
+      <h2 id="faq-h" data-reveal>Good <em>questions</em></h2>
+      <p class="lede">Short answers to what people usually ask first.</p>
+    </div>
+    <div class="faq__list">
+      {faq.map((f) => (
+        <details data-acc>
+          <summary><span>{f.q}</span><span class="faq__icon" aria-hidden="true"></span></summary>
+          <div class="faq__a" data-acc-body><p>{f.a}</p></div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq__grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: var(--space-xl); }
+  details { border-bottom: 1px solid var(--reed-light); }
+  details:first-child { border-top: 1px solid var(--reed-light); }
+  summary {
+    list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+    padding-block: 1.4rem; font-family: var(--serif); font-size: var(--step-1);
+  }
+  summary::-webkit-details-marker { display: none; }
+  .faq__icon { flex: none; position: relative; width: 2.25rem; height: 2.25rem; border-radius: 50%; border: 1px solid var(--deep); transition: background 0.3s, transform 0.4s var(--ease-out); }
+  .faq__icon::before, .faq__icon::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 1.5px; margin: -0.75px 0 0 -6px; background: currentColor; }
+  .faq__icon::after { transform: rotate(90deg); transition: transform 0.4s var(--ease-out); }
+  details[open] .faq__icon { background: var(--silt); border-color: var(--silt); }
+  details[open] .faq__icon::after { transform: rotate(0deg); }
+  .faq__a { overflow: hidden; }
+  .faq__a p { padding-bottom: 1.4rem; color: var(--ink-muted); max-width: 58ch; }
+  @media (max-width: 860px) { .faq__grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-l); } }
+</style>

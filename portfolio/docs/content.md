@@ -37,7 +37,8 @@
 - TODO: real quotes with permission. Section hidden until then.
 
 ## FAQ
-- TODO answers. Section hidden until then.
+- Answers use CV facts only (publishing name, where to find papers, current post, languages, contact).
+  TODO: add collaboration / master's / new students questions if you want them public.
 
 ## Contact
 - Email: elio.ruanli@gmail.com

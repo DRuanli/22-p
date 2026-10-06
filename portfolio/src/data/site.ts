@@ -95,3 +95,141 @@ export const languages = [
   { name: "German", level: "A2" },
   { name: "Chinese", level: "HSK 3" },
 ];
+
+/* ---------- v2: journey, expeditions, profile, FAQ (all from the CV) ---------- */
+
+export const stats = [
+  { value: 3, decimals: 0, suffix: "", label: "first-author articles in Q1 journals" },
+  { value: 8.98, decimals: 2, suffix: "/10", label: "final GPA, ranked 1st of the cohort" },
+  { value: 4, decimals: 0, suffix: "", label: "languages, from native to HSK 3" },
+  { value: 5, decimals: 0, suffix: "", label: "north–south journeys across Vietnam" },
+];
+
+export type Station = { date: string; place: string; title: string; body: string };
+
+export const stations: Station[] = [
+  { date: "2019", place: "Can Tho", title: "Upper-secondary school", body: "Nguyen Viet Hong Upper-Secondary School, Can Tho, until 2022. Chinese starts here." },
+  { date: "09/2022", place: "Ho Chi Minh City", title: "B.Sc. Computer Science begins", body: "Ton Duc Thang University, on an Academic Merit Scholarship over several semesters." },
+  { date: "2023", place: "Ho Chi Minh City", title: "First English classes", body: "Part-time teacher at MAC English centre, for primary to upper-secondary learners." },
+  { date: "03/2024", place: "Regensburg", title: "Exchange semester in Germany", body: "OTH Regensburg on a merit-based TL-Stiftung scholarship. German begins; teaching continues online." },
+  { date: "09/2024", place: "Ho Chi Minh City", title: "First research project", body: "Starts in the course Design and Analysis of Algorithms and becomes TUFCI." },
+  { date: "06/2025", place: "Ho Chi Minh City", title: "Thesis research", body: "Top-k high-utility itemsets in uncertain data where items can bring profit or loss." },
+  { date: "08/2025", place: "FPT IS", title: "Internship and a school study", body: "Intern at FPT IS until December; the early-warning project with a lower-secondary school begins." },
+  { date: "04/2026", place: "Ho Chi Minh City", title: "Valedictorian", body: "Graduates 1st of the cohort, GPA 8.98/10, one semester early. Thesis graded 9.1/10." },
+  { date: "06/2026", place: "PLOS ONE", title: "First article published", body: "Top-k closed frequent itemsets from uncertain databases, published 17 June 2026." },
+  { date: "08/2026", place: "JKSU – CIS", title: "Thesis article accepted", body: "Exact and heuristic approaches for top-k HUIM with mixed utilities. IELTS Academic 7.0 the same month." },
+  { date: "09/2026", place: "Ton Duc Thang University", title: "Researcher", body: "Appointed to the Faculty of IT. The ESWA article on early-warning systems is published online on 6 September." },
+];
+
+export type Expedition = {
+  id: string;
+  name: string;
+  subtitle: string;
+  period: string;
+  months: number;
+  cover: "lattice" | "utility" | "cohort";
+  summary: string;
+  team: string;
+  steps: { title: string; body: string }[];
+  result: { label: string; href?: string };
+};
+
+export const expeditions: Expedition[] = [
+  {
+    id: "tufci",
+    name: "TUFCI",
+    subtitle: "Top-k closed frequent itemsets in uncertain data",
+    period: "09/2024 – 02/2026",
+    months: 18,
+    cover: "lattice",
+    summary: "A best-first search algorithm that finds the k most frequent closed itemsets when every item only appears with some probability.",
+    team: "With advisor Dr. Chi-Thien Nguyen",
+    steps: [
+      { title: "Starting point", body: "The project starts in the course Design and Analysis of Algorithms (grade 10.0)." },
+      { title: "The algorithm", body: "TUFCI explores candidate itemsets best-first, so the most promising ones are expanded before the rest." },
+      { title: "Arrival", body: "Published in PLOS ONE 21(6), e0351951, on 17 June 2026." },
+    ],
+    result: { label: "PLOS ONE, 2026", href: "https://doi.org/10.1371/journal.pone.0351951" },
+  },
+  {
+    id: "ptk-huim",
+    name: "PTK-HUIM",
+    subtitle: "Top-k high-utility itemsets with profits and losses",
+    period: "06/2025 – 06/2026",
+    months: 13,
+    cover: "utility",
+    summary: "Finding the k most profitable item combinations in uncertain transaction data where items can bring profit or loss.",
+    team: "Undergraduate thesis, advisor Dr. Chi-Thien Nguyen",
+    steps: [
+      { title: "A broken bound", body: "A counterexample shows the standard pruning bound gives wrong results once negative utilities are allowed." },
+      { title: "Two correct bounds", body: "Derived two upper bounds that stay correct with mixed utilities." },
+      { title: "Exact algorithm", body: "PTK-HUIM, with three search orders that are provably equivalent." },
+      { title: "First heuristic", body: "UTKU-PSO, the first heuristic for this problem." },
+      { title: "Arrival", body: "Thesis graded 9.1/10; article accepted in JKSU – CIS in August 2026." },
+    ],
+    result: { label: "JKSU – CIS, in press" },
+  },
+  {
+    id: "ic-fs",
+    name: "IC-FS",
+    subtitle: "Deployment-honest early-warning systems",
+    period: "08/2025 – 05/2026",
+    months: 10,
+    cover: "cohort",
+    summary: "Early-warning models often rely on behaviour data a school does not have yet when it must predict. IC-FS only uses what is available at prediction time.",
+    team: "With M.Sc. Huu-Phuoc Duong and a lower-secondary school in southern Vietnam",
+    steps: [
+      { title: "The data", body: "An anonymised Mathematics cohort of 675 students, with written confirmation from the school." },
+      { title: "The leak", body: "Common models select student-behaviour features that are not yet known at prediction time, so reported results overstate what can be used for intervention." },
+      { title: "The fix", body: "IC-FS, a feature-selection method restricted to data available at prediction time. Its automatic no-leakage check held in every cross-validation fold." },
+      { title: "Arrival", body: "Published in Expert Systems with Applications, online 6 September 2026." },
+    ],
+    result: { label: "ESWA, 2026", href: "https://doi.org/10.1016/j.eswa.2026.134262" },
+  },
+];
+
+export const education = [
+  {
+    period: "09/2022 – 04/2026",
+    title: "B.Sc. in Computer Science",
+    place: "Ton Duc Thang University, Ho Chi Minh City",
+    points: [
+      "GPA 8.98/10, ranked 1st in the graduating class; finished one semester ahead of schedule.",
+      "Thesis on top-k high-utility itemsets in uncertain databases with positive and negative utilities, 9.1/10.",
+      "Design and Analysis of Algorithms 10.0 · Data Structures and Algorithms 10.0 · Deep Learning 9.4",
+    ],
+  },
+  {
+    period: "03/2024 – 09/2024",
+    title: "Exchange semester",
+    place: "OTH Regensburg, Germany",
+    points: ["Funded by a merit-based TL-Stiftung scholarship."],
+  },
+  {
+    period: "2019 – 2022",
+    title: "Upper-secondary school",
+    place: "Nguyen Viet Hong Upper-Secondary School, Can Tho",
+    points: [],
+  },
+];
+
+export const honours = [
+  { year: "2026", title: "Valedictorian, B.Sc. Computer Science, Ton Duc Thang University" },
+  { year: "2024", title: "TL-Stiftung Scholarship for an exchange semester in Germany" },
+  { year: "2022 – 2026", title: "Academic Merit Scholarship, Ton Duc Thang University" },
+  { year: "2015 – 2023", title: "Academic Merit Scholarship, Vietnam General Confederation of Labour" },
+];
+
+export const skills = [
+  { group: "Programming", items: ["Python", "Java", "SQL"] },
+  { group: "ML and data", items: ["PyTorch", "scikit-learn", "pandas", "NumPy"] },
+  { group: "Tools", items: ["Git", "LaTeX"] },
+];
+
+export const faq = [
+  { q: "Which name do you publish under?", a: "Nguyen Le. My full name is Dang Nguyen Le." },
+  { q: "Where can I find all of your papers?", a: "On Google Scholar and ORCID, linked at the bottom of this page. Each paper above also links to its DOI." },
+  { q: "What are you working on now?", a: "I am a researcher at the Faculty of Information Technology, Ton Duc Thang University, working with Assoc. Prof. Anh-Cuong Le." },
+  { q: "Which languages can we work in?", a: "Vietnamese (native), English (IELTS Academic 7.0), German (A2) and Chinese (HSK 3)." },
+  { q: "How do I get in touch?", a: "By email at elio.ruanli@gmail.com." },
+];

@@ -62,3 +62,8 @@ a:hover { text-decoration-thickness: 2px; }
 }
 .skip { position: absolute; left: 1rem; top: -4rem; z-index: 10; background: var(--silt); color: var(--deep); padding: 0.5rem 1rem; border-radius: var(--r-pill); }
 .skip:focus { top: 1rem; }
+.btn--ghost { background: transparent; color: inherit; border: 1px solid currentColor; }
+.btn--ghost:hover { background: var(--mist); color: var(--deep); border-color: var(--mist); }
+html { scroll-padding-top: 5rem; }
+.sec-head { display: flex; justify-content: space-between; align-items: end; gap: 1.5rem 3rem; flex-wrap: wrap; margin-bottom: var(--space-l); }
+.sec-head .lede { margin-top: 1rem; }

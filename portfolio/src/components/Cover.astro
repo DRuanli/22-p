@@ -1,0 +1,71 @@
+---
+// Generative cover art for each research expedition, drawn from the subject itself.
+interface Props { kind: "lattice" | "utility" | "cohort" }
+const { kind } = Astro.props;
+
+// lattice: Hasse diagram of the subsets of {a,b,c,d}
+const items = ["a", "b", "c", "d"];
+const subsets: string[][] = [];
+for (let m = 0; m < 16; m++) subsets.push(items.filter((_, i) => m & (1 << i)));
+const levels = [0, 1, 2, 3, 4].map((k) => subsets.filter((s) => s.length === k));
+const pos = new Map<string, [number, number]>();
+levels.forEach((lv, k) =>
+  lv.forEach((s, i) => pos.set(s.join(""), [200 + (i - (lv.length - 1) / 2) * 62, 250 - k * 52])),
+);
+const edges: [string, string][] = [];
+subsets.forEach((s) => items.forEach((it) => { if (!s.includes(it)) edges.push([s.join(""), [...s, it].sort().join("")]); }));
+const hot = new Set(["a", "ab", "abc", "c", "bc"]);
+
+// utility: profits (up) and losses (down) per item
+const util = [42, -18, 66, 30, -40, 55, -12, 74, 20, -30, 48, -22];
+
+// cohort: 675 students = 27 x 25
+const dots = Array.from({ length: 675 }, (_, i) => [i % 27, Math.floor(i / 27)]);
+---
+<svg class={`cover cover--${kind}`} viewBox="0 0 400 300" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+  <rect width="400" height="300" class="cover__bg" />
+  {kind === "lattice" && (
+    <g>
+      {edges.map(([a, b]) => {
+        const [x1, y1] = pos.get(a)!; const [x2, y2] = pos.get(b)!;
+        return <line x1={x1} y1={y1} x2={x2} y2={y2} class:list={["edge", { hot: hot.has(a) && hot.has(b) }]} />;
+      })}
+      {subsets.map((s) => {
+        const [x, y] = pos.get(s.join(""))!;
+        return <circle cx={x} cy={y} r={s.length ? 9 : 6} class:list={["node", { hot: hot.has(s.join("")) }]} />;
+      })}
+    </g>
+  )}
+  {kind === "utility" && (
+    <g>
+      <line x1="30" x2="370" y1="160" y2="160" class="base" />
+      {util.map((u, i) => (
+        <rect x={40 + i * 28} width="18" y={u > 0 ? 160 - u * 1.4 : 160} height={Math.abs(u) * 1.4} class={u > 0 ? "pos" : "neg"} rx="3" />
+      ))}
+      <path d="M30 40 C 120 40, 200 48, 370 30" class="bound" />
+    </g>
+  )}
+  {kind === "cohort" && (
+    <g transform="translate(38 30)">
+      {dots.map(([x, y]) => <circle cx={x * 12} cy={y * 10} r="3" class:list={["dot", { hot: x > 19 }]} />)}
+      <line x1="234" x2="234" y1="-12" y2="252" class="cut" />
+    </g>
+  )}
+</svg>
+
+<style>
+  .cover { width: 100%; height: 100%; display: block; }
+  .cover__bg { fill: var(--deep); }
+  .cover--utility .cover__bg { fill: var(--danube); }
+  .edge { stroke: #3b5a4f; stroke-width: 1.5; }
+  .edge.hot { stroke: var(--silt); stroke-width: 2.5; }
+  .node { fill: var(--deep); stroke: var(--reed-light); stroke-width: 2; }
+  .node.hot { fill: var(--silt); stroke: var(--silt-soft); }
+  .base { stroke: #c7d5df; stroke-width: 1.5; }
+  .pos { fill: var(--silt-soft); }
+  .neg { fill: var(--deep); }
+  .bound { fill: none; stroke: var(--mist); stroke-width: 2; stroke-dasharray: 6 6; }
+  .dot { fill: #3b5a4f; }
+  .dot.hot { fill: var(--silt); }
+  .cut { stroke: var(--mist); stroke-width: 1.5; stroke-dasharray: 4 5; }
+</style>

@@ -1,26 +1,36 @@
 ---
 import Base from "../layouts/Base.astro";
+import Nav from "../components/Nav.astro";
 import Hero from "../components/Hero.astro";
+import Stats from "../components/Stats.astro";
 import About from "../components/About.astro";
-import Affiliations from "../components/Affiliations.astro";
-import Journeys from "../components/Journeys.astro";
+import Marquee from "../components/Marquee.astro";
+import Journey from "../components/Journey.astro";
+import Expeditions from "../components/Expeditions.astro";
+import Profile from "../components/Profile.astro";
 import Teaching from "../components/Teaching.astro";
 import WhatIDo from "../components/WhatIDo.astro";
+import Faq from "../components/Faq.astro";
 import Footer from "../components/Footer.astro";
 import { person } from "../data/site";
-// "Words from others" and FAQ are left out until docs/content.md has real quotes and answers.
+// "Words from others" is left out until docs/content.md has real quotes.
 ---
 <Base
-  title={`${person.name}, researcher and English teacher`}
-  description="Dang Nguyen Le: data mining and educational machine learning researcher at Ton Duc Thang University, English teacher in Ho Chi Minh City."
+  title={`${person.name}, academic journey`}
+  description="Dang Nguyen Le: data mining and educational machine learning researcher at Ton Duc Thang University, valedictorian, English teacher in Ho Chi Minh City."
 >
+  <Nav />
   <Hero />
   <main id="main">
+    <Stats />
     <About />
-    <Affiliations />
-    <Journeys />
+    <Marquee />
+    <Journey />
+    <Expeditions />
+    <Profile />
     <Teaching />
     <WhatIDo />
+    <Faq />
   </main>
   <Footer />
 </Base>

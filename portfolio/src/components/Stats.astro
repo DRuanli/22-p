@@ -1,0 +1,25 @@
+---
+import { stats } from "../data/site";
+---
+<section class="stats" id="stats" aria-label="In numbers">
+  <dl class="wrap stats__grid">
+    {stats.map((s) => (
+      <div class="stat">
+        <dt>{s.label}</dt>
+        <dd>
+          <span data-count={s.value} data-decimals={s.decimals}>{s.value.toFixed(s.decimals)}</span>{s.suffix && <small>{s.suffix}</small>}
+        </dd>
+      </div>
+    ))}
+  </dl>
+</section>
+
+<style>
+  .stats { background: var(--mist); padding-block: var(--space-l); border-bottom: 1px solid var(--reed-light); }
+  .stats__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2rem; margin-block: 0; }
+  .stat { display: flex; flex-direction: column-reverse; gap: 0.5rem; padding-left: 1.25rem; border-left: 1px solid var(--reed-light); }
+  dd { margin: 0; font-family: var(--serif); font-size: clamp(2.75rem, 2rem + 3vw, 4.5rem); line-height: 1; font-variant-numeric: tabular-nums; }
+  dd small { font-size: 0.4em; color: var(--ink-muted); margin-left: 0.15em; }
+  dt { color: var(--ink-muted); max-width: 22ch; font-size: var(--step--1); }
+  @media (max-width: 860px) { .stats__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>

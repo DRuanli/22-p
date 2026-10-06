@@ -1,86 +1,94 @@
 ---
 import { person } from "../data/site";
+
+// Topographic contour lines, generated at build time (deterministic) so the hero has
+// a full-bleed "landscape" without needing a video. Three depth layers for parallax.
+const W = 1600, H = 1000;
+function contour(seed: number, base: number, amp: number) {
+  const pts: string[] = [];
+  for (let x = -100; x <= W + 100; x += 20) {
+    const y =
+      base +
+      amp * Math.sin(x / 260 + seed) +
+      amp * 0.45 * Math.sin(x / 97 + seed * 2.3) +
+      amp * 0.2 * Math.sin(x / 41 + seed * 5.1);
+    pts.push(`${x},${y.toFixed(1)}`);
+  }
+  return `M${pts.join(" L")}`;
+}
+const layers = [0, 1, 2].map((layer) =>
+  Array.from({ length: 9 }, (_, i) => contour(1.7 * layer + i * 0.18, 330 + layer * 170 + i * 26, 46 + layer * 18)),
+);
 ---
-<header class="hero" data-hero>
-  <nav class="hero__nav wrap" aria-label="Primary">
-    <a class="hero__name" href="#top">{person.name}</a>
-    <ul>
-      <li><a href="#about">About</a></li>
-      <li><a href="#journeys">Research</a></li>
-      <li><a href="#teaching">Teaching</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-  </nav>
-
-  <div class="hero__body wrap" id="top">
-    <div class="hero__text">
-      <h1 data-hero-title>Finding what still holds in imperfect <em>data</em>.</h1>
-      <p class="hero__line" data-hero-fade>{person.role}</p>
-      <a class="btn" href="#journeys" data-hero-fade>See my work</a>
-    </div>
-
-    <figure class="hero__route" aria-labelledby="route-cap">
-      <svg viewBox="0 0 520 420" role="img" aria-hidden="true">
-        <defs>
-          <clipPath id="route-clip">
-            <rect data-route-mask x="0" y="0" width="520" height="420" />
-          </clipPath>
-        </defs>
-        <g clip-path="url(#route-clip)">
-          <path class="route__water" d="M40 372 C 80 360, 96 330, 128 318 S 220 250, 270 190 S 400 70, 470 52" />
-          <path class="route__line" d="M40 372 C 80 360, 96 330, 128 318 S 220 250, 270 190 S 400 70, 470 52" />
+<header class="hero" id="top" data-hero>
+  <div class="hero__land" data-hero-land aria-hidden="true">
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice">
+      {layers.map((paths, l) => (
+        <g class={`layer layer--${l}`} data-layer={l}>
+          {paths.map((d) => <path d={d} />)}
         </g>
-        <g class="route__stops">
-          <g data-stop transform="translate(40 372)"><circle r="7" /><text x="16" y="24">Can Tho</text><text class="yr" x="16" y="44">2019</text></g>
-          <g data-stop transform="translate(128 318)"><circle r="7" /><text x="16" y="-28">Ho Chi Minh City</text><text class="yr" x="16" y="-8">2022, 2026</text></g>
-          <g data-stop transform="translate(470 52)"><circle r="7" /><text x="-12" y="40" text-anchor="end">Regensburg</text><text class="yr" x="-12" y="60" text-anchor="end">2024</text></g>
-        </g>
-      </svg>
-      <figcaption id="route-cap" class="visually-hidden">
-        Route from Can Tho (school, from 2019) to Ho Chi Minh City (university, 2022) to Regensburg, Germany (exchange, 2024), and back to Ho Chi Minh City (researcher, 2026).
-      </figcaption>
-    </figure>
+      ))}
+    </svg>
+    <div class="hero__shade"></div>
   </div>
+
+  <div class="hero__content wrap" data-hero-content>
+    <p class="hero__kicker" data-hero-fade>{person.name}, Ho Chi Minh City</p>
+    <h1 data-hero-title>Finding what still holds in imperfect <em>data</em>.</h1>
+    <div class="hero__foot">
+      <p class="hero__line" data-hero-fade>
+        An academic journey from the Mekong to the Danube and back: three Q1 journal articles,
+        a valedictorian's degree, and English classes along the way.
+      </p>
+      <div class="hero__actions" data-hero-fade>
+        <a class="btn" href="#journey">Follow the journey</a>
+        <a class="btn btn--ghost" href="#profile">Academic profile</a>
+      </div>
+    </div>
+  </div>
+
+  <a class="hero__cue" href="#stats" aria-label="Scroll to the next section" data-hero-fade>
+    <span></span>
+  </a>
 </header>
 
 <style>
   .hero {
-    background: var(--deep);
-    color: var(--mist);
-    min-height: 100svh;
-    display: flex; flex-direction: column;
-    overflow: hidden;
+    position: relative; min-height: 100svh; overflow: hidden;
+    background: var(--deep); color: var(--mist);
+    display: flex; align-items: flex-end;
   }
-  .hero__nav {
-    display: flex; justify-content: space-between; align-items: center; gap: 1rem;
-    padding-block: 1.5rem;
+  .hero__land { position: absolute; inset: 0; }
+  .hero__land svg { width: 100%; height: 100%; display: block; }
+  .layer path { fill: none; stroke-width: 1.4; }
+  .layer--0 path { stroke: #2f5a4c; }
+  .layer--1 path { stroke: #3c6684; stroke-width: 1.6; }
+  .layer--2 path { stroke: #8a6a2e; stroke-width: 1.8; }
+  .hero__shade {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(16, 38, 31, 0.55) 0%, rgba(16, 38, 31, 0.1) 35%, rgba(16, 38, 31, 0.85) 100%);
   }
-  .hero__name { font-family: var(--serif); font-size: 1.25rem; text-decoration: none; }
-  .hero__nav ul { display: flex; gap: 1.5rem; list-style: none; margin: 0; padding: 0; }
-  .hero__nav ul a { text-decoration: none; color: var(--reed-light); }
-  .hero__nav ul a:hover { color: var(--mist); }
 
-  .hero__body {
-    flex: 1;
-    display: grid; grid-template-columns: 1.15fr 1fr; align-items: center;
-    gap: var(--space-l);
-    padding-block: var(--space-l) var(--space-xl);
-  }
-  h1 { font-size: var(--step-5); max-width: 11ch; }
+  .hero__content { position: relative; padding-block: 9rem 5.5rem; }
+  .hero__kicker { color: var(--silt-soft); font-size: var(--step-0); margin-bottom: 1.5rem; }
+  h1 { font-size: clamp(3rem, 1.4rem + 7vw, 8.5rem); line-height: 0.98; max-width: 12ch; }
   h1 :global(em) { color: var(--silt-soft); }
-  .hero__line { margin-block: 1.75rem 2.25rem; max-width: 34ch; color: var(--reed-light); font-size: var(--step-1); line-height: 1.45; }
-
-  .hero__route { margin: 0; }
-  .hero__route svg { width: 100%; height: auto; overflow: visible; }
-  .route__water { fill: none; stroke: var(--danube); stroke-width: 22; stroke-linecap: round; opacity: 0.55; }
-  .route__line { fill: none; stroke: var(--silt); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 2 10; }
-  .route__stops circle { fill: var(--mist); stroke: var(--silt); stroke-width: 3; }
-  .route__stops text { fill: var(--mist); font-family: var(--serif); font-size: 22px; }
-  .route__stops text.yr { fill: var(--reed-light); font-family: var(--sans); font-size: 15px; }
-
-  @media (max-width: 860px) {
-    .hero__nav ul { display: none; }
-    .hero__body { grid-template-columns: minmax(0, 1fr); align-content: start; }
-    .hero__route { max-width: 30rem; }
+  .hero__foot {
+    display: flex; justify-content: space-between; align-items: end; gap: 2rem 4rem; flex-wrap: wrap;
+    margin-top: 2.5rem;
   }
+  .hero__line { max-width: 38ch; color: var(--reed-light); font-size: var(--step-1); line-height: 1.45; }
+  .hero__actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+  .hero__cue {
+    position: absolute; left: 50%; bottom: 1.25rem; translate: -50% 0;
+    width: 1.6rem; height: 2.6rem; border: 1.5px solid var(--reed-light); border-radius: var(--r-pill);
+  }
+  .hero__cue span {
+    position: absolute; left: 50%; top: 0.5rem; width: 4px; height: 8px; margin-left: -2px;
+    background: var(--silt); border-radius: 2px; animation: cue 1.8s var(--ease-out) infinite;
+  }
+  @keyframes cue { 0% { transform: translateY(0); opacity: 1; } 80% { transform: translateY(12px); opacity: 0; } 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .hero__cue span { animation: none; } }
+  @media (max-width: 860px) { .hero__cue { display: none; } .hero__content { padding-bottom: 3.5rem; } }
 </style>

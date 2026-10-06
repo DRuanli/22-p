@@ -1,0 +1,70 @@
+---
+import { stations } from "../data/site";
+---
+<section class="journey" id="journey" aria-labelledby="journey-h" data-journey>
+  <div class="journey__pin" data-journey-pin>
+    <div class="wrap journey__head">
+      <h2 id="journey-h" data-reveal>The <em>journey</em> so far</h2>
+      <p class="lede">From a school in Can Tho to a research post in Ho Chi Minh City, by way of Regensburg. Scroll to travel.</p>
+    </div>
+
+    <div class="journey__viewport" data-journey-viewport tabindex="0" aria-label="Timeline, scroll horizontally">
+      <ol class="journey__track" data-journey-track>
+        <li class="journey__line" aria-hidden="true"><span data-journey-line></span></li>
+        {stations.map((s, i) => (
+          <li class:list={["station", { "station--abroad": s.place === "Regensburg" }]} data-station>
+            <span class="station__dot" aria-hidden="true"></span>
+            <p class="station__date">{s.date}</p>
+            <p class="station__place">{s.place}</p>
+            <h3>{s.title}</h3>
+            <p class="station__body">{s.body}</p>
+            <span class="station__n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  .journey { background: var(--foam); }
+  .journey__pin { overflow: hidden; padding-block: var(--space-xl) var(--space-l); min-height: 100svh; display: flex; flex-direction: column; justify-content: center; }
+  .journey__head { display: flex; justify-content: space-between; align-items: end; gap: 1rem 3rem; flex-wrap: wrap; }
+  .journey__head .lede { max-width: 36ch; }
+
+  /* default (no JS / reduced motion): natively scrollable rail */
+  .journey__viewport { overflow-x: auto; margin-top: var(--space-l); scrollbar-width: thin; }
+  .journey__track {
+    position: relative; list-style: none; margin: 0;
+    display: flex; gap: 0; width: max-content;
+    padding: 2.5rem max(var(--gutter), calc((100vw - var(--max)) / 2 + var(--gutter))) 1.5rem;
+  }
+  .journey__line { position: absolute; left: 0; right: 0; top: 2.5rem; height: 2px; background: var(--reed-light); }
+  .journey__line span { position: absolute; inset: 0; background: var(--silt); transform-origin: 0 50%; }
+
+  .station { position: relative; width: clamp(16rem, 26vw, 21rem); padding: 2.25rem 2.5rem 0 0; }
+  .station__dot {
+    position: absolute; top: -0.55rem; left: 0; width: 1.1rem; height: 1.1rem; border-radius: 50%;
+    background: var(--foam); border: 3px solid var(--silt);
+  }
+  .station--abroad .station__dot { border-color: var(--danube); background: var(--danube); }
+  .station__date { font-family: var(--serif); font-size: var(--step-3); line-height: 1; }
+  .station__place { color: var(--danube); font-weight: 600; font-size: var(--step--1); margin-top: 0.6rem; }
+  .station h3 { font-size: 1.4rem; margin-top: 1.25rem; }
+  .station__body { color: var(--ink-muted); margin-top: 0.6rem; font-size: 0.97rem; max-width: 30ch; }
+  .station__n { position: absolute; right: 2.5rem; top: 2.25rem; color: var(--reed-light); font-size: var(--step--1); }
+
+  /* JS-enhanced: pinned horizontal travel (desktop) */
+  :global(.is-pinned) .journey__viewport { overflow: visible; }
+
+  @media (max-width: 860px) {
+    .journey__pin { min-height: 0; }
+    .journey__viewport { overflow: visible; }
+    .journey__track { flex-direction: column; width: auto; padding: 1rem var(--gutter) 0 calc(var(--gutter) + 2rem); }
+    .journey__line { left: calc(var(--gutter) + 0.5rem); right: auto; top: 1rem; bottom: 0; width: 2px; height: auto; }
+    .journey__line span { transform-origin: 50% 0; }
+    .station { width: auto; padding: 0 0 2.5rem; }
+    .station__dot { left: -2.05rem; top: 0.2rem; }
+    .station__n { display: none; }
+  }
+</style>

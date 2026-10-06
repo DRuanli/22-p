@@ -1,0 +1,75 @@
+---
+import { person } from "../data/site";
+const links = [
+  { href: "#journey", label: "Journey" },
+  { href: "#expeditions", label: "Research" },
+  { href: "#profile", label: "Profile" },
+  { href: "#teaching", label: "Teaching" },
+  { href: "#faq", label: "FAQ" },
+];
+---
+<nav class="nav" data-nav aria-label="Primary">
+  <div class="nav__bar">
+    <a class="nav__name" href="#top">{person.name}</a>
+    <ul class="nav__links">
+      {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+    </ul>
+    <a class="nav__cta" href="#contact">Get in touch</a>
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-menu" data-nav-toggle>
+      <span class="visually-hidden">Menu</span><span class="nav__burger" aria-hidden="true"></span>
+    </button>
+  </div>
+  <div class="nav__menu" id="nav-menu" data-nav-menu hidden>
+    <ul>
+      {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      <li><a href="#contact">Get in touch</a></li>
+    </ul>
+  </div>
+  <div class="nav__progress" aria-hidden="true"><span data-progress></span></div>
+</nav>
+
+<style>
+  .nav {
+    position: fixed; inset: 0 0 auto 0; z-index: 50;
+    color: var(--mist);
+    transition: transform 0.5s var(--ease-out), background 0.4s, color 0.4s;
+  }
+  .nav.is-solid { background: rgba(16, 38, 31, 0.92); backdrop-filter: blur(10px); }
+  .nav.is-hidden { transform: translateY(-100%); }
+  .nav__bar {
+    max-width: calc(var(--max) + 2 * var(--gutter)); margin-inline: auto;
+    display: flex; align-items: center; gap: 2rem; padding: 1.1rem var(--gutter);
+  }
+  .nav__name { font-family: var(--serif); font-size: 1.3rem; text-decoration: none; margin-right: auto; }
+  .nav__links { display: flex; gap: 1.75rem; list-style: none; margin: 0; padding: 0; }
+  .nav__links a, .nav__menu a { text-decoration: none; color: var(--reed-light); transition: color 0.3s; }
+  .nav__links a:hover { color: var(--mist); }
+  .nav__cta {
+    text-decoration: none; padding: 0.55em 1.2em; border-radius: var(--r-pill);
+    border: 1px solid rgba(233, 238, 234, 0.4); transition: background 0.3s, color 0.3s;
+  }
+  .nav__cta:hover { background: var(--silt); color: var(--deep); border-color: var(--silt); }
+  .nav__progress { height: 2px; }
+  .nav__progress span { display: block; height: 100%; background: var(--silt); transform-origin: 0 50%; transform: scaleX(0); }
+
+  .nav__toggle { display: none; width: 2.75rem; height: 2.75rem; border: 0; background: none; color: inherit; cursor: pointer; }
+  .nav__burger, .nav__burger::before, .nav__burger::after {
+    display: block; width: 22px; height: 2px; background: currentColor; position: relative; transition: transform 0.3s;
+  }
+  .nav__burger::before, .nav__burger::after { content: ""; position: absolute; left: 0; }
+  .nav__burger::before { top: -7px; }
+  .nav__burger::after { top: 7px; }
+  [aria-expanded="true"] .nav__burger { background: transparent; }
+  [aria-expanded="true"] .nav__burger::before { transform: translateY(7px) rotate(45deg); }
+  [aria-expanded="true"] .nav__burger::after { transform: translateY(-7px) rotate(-45deg); }
+
+  .nav__menu { background: var(--deep); padding: 1rem var(--gutter) 2rem; }
+  .nav__menu ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.25rem; }
+  .nav__menu a { display: block; font-family: var(--serif); font-size: 2rem; padding: 0.35rem 0; color: var(--mist); }
+
+  @media (max-width: 960px) {
+    .nav__links, .nav__cta { display: none; }
+    .nav__toggle { display: grid; place-items: center; }
+  }
+  @media (min-width: 961px) { .nav__menu { display: none; } }
+</style>
