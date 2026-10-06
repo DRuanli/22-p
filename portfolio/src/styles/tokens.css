@@ -1,40 +1,27 @@
 :root {
-  /* Two rivers: Mekong silt, Danube slate, on cool mist */
-  --mist: #e9eeea;
-  --foam: #f7f9f7;
-  --deep: #10261f;
-  --silt: #c08a2e;
-  --silt-soft: #e2b867;
-  --danube: #35566f;
-  --reed: #7c927a;
-  --reed-light: #a9bba7;
-  --ink-muted: #4a5d56;
+  /* Field-notebook palette: white paper, black ink, one signal red, sepia film plates */
+  --paper: #ffffff;
+  --ink: #121212;
+  --grey: #8a8a8a;
+  --grey-2: #b9b9b9;
+  --line: #d6d6d6;
+  --red: #d2261a;
+  --red-dark: #a91c12;
+  --film-dark: #1d1813;
+  --film: #6f5a43;
+  --film-light: #d8c7aa;
 
-  --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
-  --sans: "Public Sans", system-ui, sans-serif;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
 
-  /* minor-third scale from 17px */
-  --step--1: 0.875rem;
-  --step-0: 1.0625rem;
-  --step-1: 1.33rem;
-  --step-2: 1.66rem;
-  --step-3: clamp(1.9rem, 1.4rem + 2vw, 2.6rem);
-  --step-4: clamp(2.4rem, 1.6rem + 3.4vw, 4rem);
-  --step-5: clamp(2.9rem, 1.6rem + 5.6vw, 6.4rem);
+  --fs-mono: 0.8125rem;   /* 13px */
+  --fs-mono-s: 0.75rem;
+  --fs-h2: clamp(2rem, 1.2rem + 2.6vw, 3.1rem);
+  --fs-h1: clamp(2.6rem, 1.2rem + 5vw, 5.4rem);
 
-  --space-xs: 0.5rem;
-  --space-s: 1rem;
-  --space-m: 1.5rem;
-  --space-l: 2.5rem;
-  --space-xl: clamp(3.5rem, 2rem + 6vw, 7.5rem);
+  --gutter: clamp(1rem, 4.2vw, 3.3rem);
+  --col-gap: clamp(0.75rem, 2vw, 1.75rem);
+  --section: clamp(5rem, 3rem + 8vw, 10rem);
 
-  --gutter: clamp(1rem, 0.5rem + 3vw, 3.5rem);
-  --max: 78rem;
-
-  /* radius follows hierarchy: media large, cards medium, controls pill */
-  --r-media: 1.75rem;
-  --r-card: 1rem;
-  --r-pill: 999px;
-
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }

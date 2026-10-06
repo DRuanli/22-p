@@ -1,0 +1,53 @@
+---
+import { routes } from "../data/site";
+import Plate from "./Plate.astro";
+interface Props { exclude: string }
+const { exclude } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const list = routes.filter((r) => r.id !== exclude);
+---
+<section class="section explore" aria-labelledby="explore-h">
+  <div class="grid">
+    <h2 id="explore-h" class="c-head" data-reveal>Continue<br />exploring</h2>
+  </div>
+  <div class="explore__viewport" data-explore>
+    <ul class="explore__track">
+      {list.map((r) => (
+        <li class="explore__card">
+          <a href={`${base}routes/${r.id}/`} data-transition>
+            <div class="crop"><Plate kind={r.plate} id={r.id} class="explore__plate" /></div>
+            <p class="explore__name">{r.name}</p>
+            <p class="muted">{r.length}</p>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+  <div class="grid">
+    <div class="c-full explore__nav">
+      <button type="button" data-explore-prev aria-label="Previous route">Prev</button>
+      <span aria-hidden="true"></span>
+      <button type="button" data-explore-next aria-label="Next route">Next</button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .explore__viewport { overflow: hidden; margin-top: 3.5rem; padding-inline: var(--gutter); }
+  .explore__track { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--col-gap); touch-action: pan-y pinch-zoom; }
+  .explore__card { flex: 0 0 calc((100% - 2 * var(--col-gap)) / 3); min-width: 0; }
+  .explore__card a { text-decoration: none; display: grid; gap: 0.35rem; }
+  :global(.explore__plate) { aspect-ratio: 4 / 3; }
+  :global(.explore__plate svg) { transition: transform 0.8s var(--ease); }
+  .explore__card a:hover :global(.explore__plate svg) { transform: scale(1.04); }
+  .explore__name { margin-top: 0.9rem; }
+  .explore__card a:hover .explore__name { color: var(--red); }
+  .explore__nav { display: flex; align-items: center; gap: 1rem; margin-top: 2.5rem; }
+  .explore__nav span { flex: 1; height: 1px; background: var(--ink); }
+  .explore__nav button { background: none; border: 0; font: inherit; text-transform: uppercase; cursor: pointer; padding: 0.5rem 0; color: inherit; }
+  .explore__nav button::before { content: "‹  "; }
+  .explore__nav button:last-child::before { content: none; }
+  .explore__nav button:last-child::after { content: "  ›"; }
+  .explore__nav button:hover { color: var(--red); }
+  @media (max-width: 860px) { .explore__card { flex-basis: 80%; } }
+</style>

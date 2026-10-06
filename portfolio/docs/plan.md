@@ -48,3 +48,11 @@ h2 line reveals, rail cards enter once, teaching ladder parallax. Reduced motion
   itemset lattice, profit/loss bars, 675-dot cohort) that open a step-by-step route dialog.
 - "Academic profile" tabs: Education, Publications, Honours, Skills.
 - FAQ accordion with answers taken from the CV only.
+
+## v3 — matched to the owner's screen recordings of tour-kyrgyzstan.com
+Palette: paper #FFFFFF, ink #121212, grey #8A8A8A, line #D6D6D6, signal red #D2261A, sepia film tones.
+Type: Archivo 800/900 uppercase headlines; IBM Plex Mono uppercase, justified body.
+Grid: 12 columns; headings on column 5, paragraphs on columns 9–12, lists on 1–3.
+Motion: halftone hero canvas, edge rulers with red index, scramble text (GSAP ScrambleText),
+pinned routes with active plate + scrambled description, itinerary active row + red box,
+Embla PREV/NEXT sliders, SplitText headline rises, black panel page wipe.

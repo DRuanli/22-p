@@ -28,6 +28,10 @@
 - JKSU–CIS, in press (Q1) — Exact and heuristic approaches for mining top-k high-utility itemsets in uncertain databases with mixed utilities
 - Not listed: "Detect, Then What?…" (under review; not on CV). TODO decide.
 
+## Route photos
+- TODO: add your own photos as public/media/<id>.jpg (tufci, ptk-huim, ic-fs, regensburg, teaching,
+  feature) to replace the generated film plates.
+
 ## Teaching
 - English since 2023, primary to upper-secondary, MAC English centre, HCMC: PET, IELTS, Flyers.
 - Kept teaching online through the exchange semester in Germany.

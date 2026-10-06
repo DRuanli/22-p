@@ -1,0 +1,12 @@
+<div class="pt" data-pt aria-hidden="true"></div>
+<script is:inline>
+  // Cover the page before first paint when we arrived through a page transition.
+  try { if (sessionStorage.getItem("pt") === "1") document.documentElement.classList.add("pt-in"); } catch (e) {}
+</script>
+<style>
+  .pt {
+    position: fixed; inset: 0; z-index: 90; background: #111;
+    transform: translateX(100%); pointer-events: none;
+  }
+  :global(html.pt-in) .pt { transform: translateX(0); }
+</style>

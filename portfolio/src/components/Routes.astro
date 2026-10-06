@@ -1,0 +1,90 @@
+---
+import { routes } from "../data/site";
+import Plate from "./Plate.astro";
+const base = import.meta.env.BASE_URL;
+const href = (id: string) => `${base}routes/${id}/`;
+---
+<section class="routes" id="routes" aria-labelledby="routes-h" data-routes>
+  <div class="grid routes__head">
+    <h2 id="routes-h" class="c-head" data-reveal>Routes<br />which don't exist<br />in textbooks</h2>
+  </div>
+
+  <div class="routes__body">
+    <!-- pinned layer: list, centre frame, text -->
+    <div class="routes__pin grid" data-routes-pin>
+      <ol class="routes__list c-left">
+        {routes.map((r, i) => (
+          <li>
+            <a href={href(r.id)} data-route-link={i} class:list={[{ "is-active": i === 0 }]} data-transition>
+              <span>{r.name}</span><span>{r.length}</span>
+            </a>
+          </li>
+        ))}
+        <li><a href={`${base}#contact`}><span>Plan a route together</span></a></li>
+      </ol>
+      <div class="routes__frame c-center crop" aria-hidden="true">
+        <a class="btn btn--tight routes__discover" href={href(routes[0].id)} data-route-cta data-transition tabindex="-1">Discover</a>
+      </div>
+      <p class="routes__text c-right justify" data-route-text aria-live="polite">{routes[0].teaser}</p>
+    </div>
+
+    <!-- scrolling plates -->
+    <div class="routes__stack grid">
+      <ul class="c-center">
+        {routes.map((r, i) => (
+          <li class="routes__item" data-route-item={i}>
+            <Plate kind={r.plate} id={r.id} class="routes__plate" />
+            <div class="routes__mobile">
+              <p class="routes__mobile-head"><span>{r.name}</span><span class="muted">{r.length}</span></p>
+              <p class="justify">{r.teaser}</p>
+              <a class="btn btn--tight" href={href(r.id)} data-transition>Discover</a>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .routes { padding-top: var(--section); }
+  .routes__head { margin-bottom: 3rem; }
+
+  .routes__body { display: grid; }
+  .routes__body > * { grid-area: 1 / 1; }
+  .routes__pin {
+    position: sticky; top: 0; height: 100vh; align-self: start; z-index: 2;
+    align-items: center; pointer-events: none;
+  }
+  .routes__pin > * { pointer-events: auto; }
+  .routes__list { list-style: none; margin: 0; padding: 0 0 0 calc(var(--gutter) * 0.9); display: grid; gap: 0.35rem; }
+  .routes__list a { display: flex; justify-content: space-between; gap: 1rem; text-decoration: none; color: var(--grey); transition: color 0.3s; }
+  .routes__list a:hover, .routes__list a.is-active { color: var(--red); }
+
+  .routes__frame {
+    --o: 6px; aspect-ratio: 352 / 310; align-self: center; pointer-events: none;
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 1.1rem;
+  }
+  .routes__discover { pointer-events: auto; }
+  .routes__text { max-width: 22rem; }
+
+  .routes__stack ul { list-style: none; margin: 0; padding: calc(50vh - 44.03% + 6px) 6px; display: grid; gap: 2.25rem; }
+  .routes__item { position: relative; }
+  :global(.routes__plate) { aspect-ratio: 352 / 310; transition: opacity 0.6s var(--ease); }
+  .routes__item::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.8));
+    transition: opacity 0.6s var(--ease);
+  }
+  .routes__item.is-active::after { opacity: 0; }
+  .routes__mobile { display: none; }
+
+  @media (max-width: 860px) {
+    .routes__pin { display: none; }
+    .routes__stack ul { padding: 0; gap: 3rem; }
+    .routes__item::after { display: none; }
+    .routes__mobile { display: grid; gap: 0.9rem; padding-top: 1rem; justify-items: start; }
+    .routes__mobile-head { display: flex; justify-content: space-between; width: 100%; color: var(--red); }
+    .routes { padding-bottom: var(--section); }
+  }
+</style>

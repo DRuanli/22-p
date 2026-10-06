@@ -1,94 +1,38 @@
 ---
-import { person } from "../data/site";
-
-// Topographic contour lines, generated at build time (deterministic) so the hero has
-// a full-bleed "landscape" without needing a video. Three depth layers for parallax.
-const W = 1600, H = 1000;
-function contour(seed: number, base: number, amp: number) {
-  const pts: string[] = [];
-  for (let x = -100; x <= W + 100; x += 20) {
-    const y =
-      base +
-      amp * Math.sin(x / 260 + seed) +
-      amp * 0.45 * Math.sin(x / 97 + seed * 2.3) +
-      amp * 0.2 * Math.sin(x / 41 + seed * 5.1);
-    pts.push(`${x},${y.toFixed(1)}`);
-  }
-  return `M${pts.join(" L")}`;
-}
-const layers = [0, 1, 2].map((layer) =>
-  Array.from({ length: 9 }, (_, i) => contour(1.7 * layer + i * 0.18, 330 + layer * 170 + i * 26, 46 + layer * 18)),
-);
+const base = import.meta.env.BASE_URL;
 ---
-<header class="hero" id="top" data-hero>
-  <div class="hero__land" data-hero-land aria-hidden="true">
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice">
-      {layers.map((paths, l) => (
-        <g class={`layer layer--${l}`} data-layer={l}>
-          {paths.map((d) => <path d={d} />)}
-        </g>
-      ))}
-    </svg>
+<section class="hero" data-hero aria-labelledby="hero-h">
+  <div class="hero__media" data-hero-media>
+    <canvas data-halftone aria-hidden="true"></canvas>
     <div class="hero__shade"></div>
   </div>
 
-  <div class="hero__content wrap" data-hero-content>
-    <p class="hero__kicker" data-hero-fade>{person.name}, Ho Chi Minh City</p>
-    <h1 data-hero-title>Finding what still holds in imperfect <em>data</em>.</h1>
-    <div class="hero__foot">
-      <p class="hero__line" data-hero-fade>
-        An academic journey from the Mekong to the Danube and back: three Q1 journal articles,
-        a valedictorian's degree, and English classes along the way.
-      </p>
-      <div class="hero__actions" data-hero-fade>
-        <a class="btn" href="#journey">Follow the journey</a>
-        <a class="btn btn--ghost" href="#profile">Academic profile</a>
-      </div>
+  <div class="hero__inner grid">
+    <h1 id="hero-h" class="hero__title" data-hero-title>
+      Research<br />that holds up<br />in imperfect data
+    </h1>
+    <p class="hero__text justify" data-scramble-in>
+      Exact pattern mining, honest evaluation, and English classes on the side.
+      An academic journey from the Mekong to the Danube and back.
+    </p>
+    <div class="hero__cta" data-hero-fade>
+      <a class="btn" href={`${base}#routes`}>Discover routes</a>
     </div>
   </div>
-
-  <a class="hero__cue" href="#stats" aria-label="Scroll to the next section" data-hero-fade>
-    <span></span>
-  </a>
-</header>
+</section>
 
 <style>
-  .hero {
-    position: relative; min-height: 100svh; overflow: hidden;
-    background: var(--deep); color: var(--mist);
-    display: flex; align-items: flex-end;
+  .hero { position: relative; height: 100svh; min-height: 34rem; overflow: hidden; color: #fff; background: var(--film-dark); }
+  .hero__media { position: absolute; inset: 0; }
+  .hero__media canvas { width: 100%; height: 100%; display: block; }
+  .hero__shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20, 16, 12, 0.35), rgba(20, 16, 12, 0.05) 40%, rgba(20, 16, 12, 0.55)); }
+  .hero__inner { position: relative; height: 100%; grid-template-rows: auto 1fr auto; padding-block: 7.5rem 4rem; }
+  .hero__title { grid-column: 1 / span 8; grid-row: 1; font-size: var(--fs-h1); }
+  .hero__text { grid-column: 9 / span 4; grid-row: 2; align-self: center; max-width: 30rem; }
+  .hero__cta { grid-column: 1 / span 4; grid-row: 3; }
+  @media (max-width: 860px) {
+    .hero__title, .hero__text, .hero__cta { grid-column: 1 / -1; }
+    .hero__text { align-self: end; margin-bottom: 2rem; }
+    .hero__inner { padding-block: 6.5rem 2.5rem; }
   }
-  .hero__land { position: absolute; inset: 0; }
-  .hero__land svg { width: 100%; height: 100%; display: block; }
-  .layer path { fill: none; stroke-width: 1.4; }
-  .layer--0 path { stroke: #2f5a4c; }
-  .layer--1 path { stroke: #3c6684; stroke-width: 1.6; }
-  .layer--2 path { stroke: #8a6a2e; stroke-width: 1.8; }
-  .hero__shade {
-    position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(16, 38, 31, 0.55) 0%, rgba(16, 38, 31, 0.1) 35%, rgba(16, 38, 31, 0.85) 100%);
-  }
-
-  .hero__content { position: relative; padding-block: 9rem 5.5rem; }
-  .hero__kicker { color: var(--silt-soft); font-size: var(--step-0); margin-bottom: 1.5rem; }
-  h1 { font-size: clamp(3rem, 1.4rem + 7vw, 8.5rem); line-height: 0.98; max-width: 12ch; }
-  h1 :global(em) { color: var(--silt-soft); }
-  .hero__foot {
-    display: flex; justify-content: space-between; align-items: end; gap: 2rem 4rem; flex-wrap: wrap;
-    margin-top: 2.5rem;
-  }
-  .hero__line { max-width: 38ch; color: var(--reed-light); font-size: var(--step-1); line-height: 1.45; }
-  .hero__actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-
-  .hero__cue {
-    position: absolute; left: 50%; bottom: 1.25rem; translate: -50% 0;
-    width: 1.6rem; height: 2.6rem; border: 1.5px solid var(--reed-light); border-radius: var(--r-pill);
-  }
-  .hero__cue span {
-    position: absolute; left: 50%; top: 0.5rem; width: 4px; height: 8px; margin-left: -2px;
-    background: var(--silt); border-radius: 2px; animation: cue 1.8s var(--ease-out) infinite;
-  }
-  @keyframes cue { 0% { transform: translateY(0); opacity: 1; } 80% { transform: translateY(12px); opacity: 0; } 100% { opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .hero__cue span { animation: none; } }
-  @media (max-width: 860px) { .hero__cue { display: none; } .hero__content { padding-bottom: 3.5rem; } }
 </style>

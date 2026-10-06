@@ -1,0 +1,27 @@
+---
+// Fixed measuring rulers on both edges; the red index tracks scroll progress.
+const ticks = Array.from({ length: 25 });
+---
+<div class="rulers" aria-hidden="true" data-rulers>
+  {["l", "r"].map((side) => (
+    <div class:list={["ruler", `ruler--${side}`]}>
+      {ticks.map(() => <span class="tick" data-tick></span>)}
+      <span class="ruler__index" data-ruler-index></span>
+    </div>
+  ))}
+</div>
+
+<style>
+  .ruler {
+    position: fixed; z-index: 40; top: 40vh; height: 20vh; width: 26px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    pointer-events: none;
+  }
+  .ruler--l { left: 20px; align-items: flex-start; }
+  .ruler--r { right: 20px; align-items: flex-end; }
+  .tick { display: block; width: 13px; height: 1px; background: var(--grey-2); transform-origin: left center; will-change: transform; }
+  .ruler--r .tick { transform-origin: right center; }
+  .ruler__index { position: absolute; left: 0; top: 0; width: 26px; height: 1.5px; background: var(--red); }
+  .ruler--r .ruler__index { left: auto; right: 0; }
+  @media (max-width: 860px) { .rulers { display: none; } }
+</style>

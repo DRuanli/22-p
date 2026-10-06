@@ -1,129 +1,50 @@
 ---
-import { education, papers, honours, skills, languages, person } from "../data/site";
-const tabs = [
-  { id: "education", label: "Education" },
-  { id: "publications", label: "Publications" },
-  { id: "honours", label: "Honours" },
-  { id: "skills", label: "Skills" },
-];
-// Bold the author's own name in citations, as on the CV.
-const boldMe = (a: string) => a.replace("Le, N.", "<strong>Le, N.</strong>");
+import { education, honours, skills, profileStats, person } from "../data/site";
+import StatRow from "./StatRow.astro";
 ---
 <section class="section profile" id="profile" aria-labelledby="profile-h">
-  <div class="wrap">
-    <div class="sec-head">
+  <div class="grid">
+    <h2 id="profile-h" class="c-head" data-reveal>Academic<br />profile</h2>
+    <p class="c-right justify profile__intro" data-scramble>
+      The record behind the routes, as it stands on my CV in October 2026.
+      Publications are listed under the name {person.publishedAs}.
+    </p>
+  </div>
+
+  <div class="profile__stats"><StatRow items={profileStats} /></div>
+
+  <div class="grid">
+    <div class="c-full ruled profile__grid">
       <div>
-        <h2 id="profile-h" data-reveal>Academic <em>profile</em></h2>
-        <p class="lede">The record behind the journey, as it appears on my CV.</p>
-      </div>
-      <p class="profile__ids">
-        <a href={person.scholar} target="_blank" rel="noopener">Google Scholar</a>
-        <a href={person.orcid} target="_blank" rel="noopener">ORCID 0009-0009-5517-9996</a>
-      </p>
-    </div>
-
-    <div class="tabs" data-tabs>
-      <div class="tabs__list" role="tablist" aria-label="Profile sections">
-        {tabs.map((t, i) => (
-          <button role="tab" type="button" id={`tab-${t.id}`} aria-controls={`panel-${t.id}`}
-            aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1}>{t.label}</button>
-        ))}
-        <span class="tabs__ink" data-tabs-ink aria-hidden="true"></span>
-      </div>
-
-      <div class="tabs__panel" role="tabpanel" id="panel-education" aria-labelledby="tab-education">
-        <ol class="entries">
+        <h3 class="profile__h">Education</h3>
+        <ul class="profile__list">
           {education.map((e) => (
-            <li>
-              <p class="entries__when">{e.period}</p>
-              <div>
-                <h3>{e.title}</h3>
-                <p class="entries__where">{e.place}</p>
-                {e.points.length > 0 && <ul>{e.points.map((p) => <li>{p}</li>)}</ul>}
-              </div>
-            </li>
+            <li><span class="label">{e.when}</span><span>{e.title}</span><span class="muted">{e.where}</span>{e.note && <span class="muted">{e.note}</span>}</li>
           ))}
-        </ol>
+        </ul>
       </div>
-
-      <div class="tabs__panel" role="tabpanel" id="panel-publications" aria-labelledby="tab-publications" hidden>
-        <p class="note">Journal articles, first author on all. Published under the name {person.publishedAs}. Quartiles: SCImago Journal Rank 2025.</p>
-        <ol class="entries">
-          {papers.map((p) => (
-            <li>
-              <p class="entries__when">{p.year}</p>
-              <div>
-                <p class="cite"><span set:html={boldMe(p.authors)} /> {p.title}. <em>{p.venue}</em>.</p>
-                <p class="entries__where">
-                  Q1{p.href ? <> · <a href={p.href} target="_blank" rel="noopener">{p.href.replace("https://doi.org/", "doi:")}</a></> : <> · {p.status}</>}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
+      <div>
+        <h3 class="profile__h">Honours</h3>
+        <ul class="profile__list">
+          {honours.map((h) => (<li><span class="label">{h.when}</span><span>{h.title}</span></li>))}
+        </ul>
       </div>
-
-      <div class="tabs__panel" role="tabpanel" id="panel-honours" aria-labelledby="tab-honours" hidden>
-        <ol class="entries">
-          {honours.map((h) => (
-            <li><p class="entries__when">{h.year}</p><div><h3>{h.title}</h3></div></li>
-          ))}
-        </ol>
-      </div>
-
-      <div class="tabs__panel" role="tabpanel" id="panel-skills" aria-labelledby="tab-skills" hidden>
-        <div class="skills">
-          {[...skills, { group: "Languages", items: languages.map((l) => `${l.name} (${l.level})`) }].map((g) => (
-            <div>
-              <h3>{g.group}</h3>
-              <ul class="chips">{g.items.map((i) => <li>{i}</li>)}</ul>
-            </div>
-          ))}
-        </div>
+      <div>
+        <h3 class="profile__h">Skills</h3>
+        <ul class="profile__list">
+          {skills.map((s) => (<li><span class="label">{s.label}</span><span>{s.value}</span></li>))}
+        </ul>
       </div>
     </div>
   </div>
 </section>
 
 <style>
-  .profile__ids { display: flex; gap: 1.25rem; flex-wrap: wrap; }
-  .profile__ids a { color: var(--danube); font-weight: 600; }
-
-  .tabs__list { position: relative; display: flex; gap: 0.25rem; border-bottom: 1px solid var(--reed-light); overflow-x: auto; scrollbar-width: none; }
-  .tabs__list button {
-    flex: none; background: none; border: 0; cursor: pointer; font: inherit;
-    font-family: var(--serif); font-size: var(--step-1); color: var(--ink-muted);
-    padding: 0.75rem 1.1rem 0.9rem;
-    transition: color 0.3s;
-  }
-  .tabs__list button[aria-selected="true"] { color: var(--deep); }
-  .tabs__ink {
-    position: absolute; left: 0; bottom: -1px; height: 3px; width: 100px; background: var(--silt);
-    transform-origin: 0 50%; transition: transform 0.5s var(--ease-out);
-  }
-  .tabs__panel { padding-top: var(--space-l); }
-  .note { color: var(--ink-muted); margin-bottom: 1.5rem; font-size: var(--step--1); }
-
-  .entries { list-style: none; margin: 0; padding: 0; }
-  .entries > li {
-    display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 1rem 2rem;
-    padding-block: 1.5rem; border-bottom: 1px solid #d4ddd6;
-  }
-  .entries__when { font-family: var(--serif); font-size: 1.15rem; color: var(--danube); }
-  .entries h3 { font-size: 1.45rem; }
-  .entries__where { color: var(--ink-muted); margin-top: 0.35rem; }
-  .entries__where a { color: var(--danube); overflow-wrap: anywhere; }
-  .entries ul { margin: 0.75rem 0 0; padding-left: 1.1rem; color: var(--ink-muted); display: grid; gap: 0.35rem; max-width: 65ch; }
-  .cite { font-size: 1.05rem; max-width: 70ch; }
-
-  .skills { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2rem; }
-  .skills h3 { font-size: 1.3rem; margin-bottom: 1rem; }
-  .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .chips li { padding: 0.35em 0.9em; border-radius: var(--r-pill); border: 1px solid var(--reed-light); font-size: 0.95rem; }
-
-  @media (max-width: 860px) {
-    .entries > li { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
-    .skills { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  }
-  @media (max-width: 520px) { .skills { grid-template-columns: minmax(0, 1fr); } }
+  .profile__intro { margin-top: 2rem; }
+  .profile__stats { margin-block: 4rem 3rem; }
+  .profile__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .profile__h { font-size: 1.15rem; margin-bottom: 1.5rem; }
+  .profile__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.25rem; }
+  .profile__list li { display: grid; gap: 0.15rem; }
+  @media (max-width: 860px) { .profile__grid { grid-template-columns: minmax(0, 1fr); } .profile__grid > * { border-right: 1px solid var(--line); } }
 </style>

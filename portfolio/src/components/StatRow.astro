@@ -1,0 +1,21 @@
+---
+interface Props { items: { label: string; value: string }[] }
+const { items } = Astro.props;
+---
+<dl class="statrow grid">
+  {items.map((s) => (
+    <div><dt class="label">{s.label}</dt><dd>{s.value}</dd></div>
+  ))}
+</dl>
+
+<style>
+  .statrow { margin: 0; row-gap: 1.25rem; }
+  .statrow > div { grid-column: span 3; }
+  .statrow > div:nth-child(2) { justify-self: start; padding-left: 15%; }
+  .statrow > div:nth-child(3) { padding-left: 25%; }
+  .statrow > div:last-child { justify-self: end; text-align: right; }
+  dd { margin: 0.2rem 0 0; }
+  @media (max-width: 860px) {
+    .statrow > div { grid-column: span 6; padding-left: 0 !important; justify-self: start !important; text-align: left !important; }
+  }
+</style>

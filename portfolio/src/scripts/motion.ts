@@ -1,266 +1,335 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
+import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 import Lenis from "lenis";
 import EmblaCarousel from "embla-carousel";
 
-gsap.registerPlugin(ScrollTrigger, SplitText);
+gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin);
 
-const reduceQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = <T extends Element = HTMLElement>(s: string, root: ParentNode = document) => root.querySelector<T>(s);
 const $$ = <T extends Element = HTMLElement>(s: string, root: ParentNode = document) => [...root.querySelectorAll<T>(s)];
+const SCRAMBLE_CHARS = "0123456789<>/\\[]{}#$%&*+=-^!?_";
 
 /* ---------- smooth scroll ---------- */
 
-const lenis = reduceQuery.matches ? null : new Lenis({ lerp: 0.1, anchors: { offset: -72 } });
+const lenis = reduce ? null : new Lenis({ lerp: 0.1, anchors: { offset: -80 } });
 if (lenis) {
   lenis.on("scroll", ScrollTrigger.update);
   gsap.ticker.add((t) => lenis.raf(t * 1000));
   gsap.ticker.lagSmoothing(0);
 }
 
-/* ---------- nav: solid after hero, hides on scroll down, progress bar ---------- */
+/* ---------- page transition: a black panel wipes across between pages ---------- */
+
+const panel = $("[data-pt]");
+const html = document.documentElement;
+// GSAP owns the panel transform from here on (CSS only covers the first paint).
+if (panel) gsap.set(panel, { x: 0, xPercent: html.classList.contains("pt-in") ? 0 : 100 });
+function reveal() {
+  try { sessionStorage.removeItem("pt"); } catch {}
+  if (!panel || !html.classList.contains("pt-in")) return;
+  html.classList.remove("pt-in");
+  gsap.fromTo(panel, { xPercent: 0 }, { xPercent: -100, duration: 0.8, ease: "power3.inOut", delay: 0.1 });
+}
+reveal();
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted && panel) gsap.set(panel, { xPercent: 100 });
+});
+if (panel && !reduce) {
+  document.addEventListener("click", (e) => {
+    const a = (e.target as Element).closest<HTMLAnchorElement>("a[data-transition]");
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    const url = new URL(a.href, location.href);
+    if (url.origin !== location.origin || url.pathname === location.pathname) return;
+    e.preventDefault();
+    try { sessionStorage.setItem("pt", "1"); } catch {}
+    gsap.fromTo(panel, { xPercent: 100 }, {
+      xPercent: 0, duration: 0.7, ease: "power3.inOut",
+      onComplete: () => { location.href = url.href; },
+    });
+  });
+}
+
+/* ---------- nav: CTA replaces the links once past the hero; rulers track progress ---------- */
 
 const nav = $("[data-nav]");
-const progress = $("[data-progress]");
-const toggle = $<HTMLButtonElement>("[data-nav-toggle]");
-const menu = $("[data-nav-menu]");
-if (nav) {
-  let lastY = window.scrollY;
-  const onScroll = () => {
-    const y = window.scrollY;
-    const max = document.documentElement.scrollHeight - innerHeight;
-    nav.classList.toggle("is-solid", y > innerHeight * 0.6);
-    const menuOpen = toggle?.getAttribute("aria-expanded") === "true";
-    nav.classList.toggle("is-hidden", !menuOpen && y > lastY && y > innerHeight);
-    lastY = y;
-    if (progress) progress.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
-  };
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
-  // keyboard users always see the nav
-  nav.addEventListener("focusin", () => nav.classList.remove("is-hidden"));
+const rulerIdx = $$("[data-ruler-index]");
+const rulerTicks = $$("[data-rulers] .ruler").map((r) => $$("[data-tick]", r));
+function onScroll() {
+  const y = window.scrollY;
+  nav?.classList.toggle("is-cta", y > innerHeight * 0.85);
+  const max = document.documentElement.scrollHeight - innerHeight;
+  const p = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0;
+  rulerIdx.forEach((el) => {
+    const h = (el.parentElement as HTMLElement).clientHeight;
+    el.style.transform = `translateY(${p * h}px)`;
+  });
+  rulerTicks.forEach((ticks) => {
+    const n = ticks.length - 1;
+    ticks.forEach((t, i) => {
+      const d = Math.abs(i / n - p) * n;
+      t.style.transform = `scaleX(${1 + Math.max(0, 1 - d / 2.5) * 0.85})`;
+    });
+  });
 }
-if (toggle && menu) {
-  const setOpen = (open: boolean) => {
-    toggle.setAttribute("aria-expanded", String(open));
-    menu.hidden = !open;
-    nav?.classList.toggle("is-solid", open || window.scrollY > innerHeight * 0.6);
-  };
-  toggle.addEventListener("click", () => setOpen(toggle.getAttribute("aria-expanded") !== "true"));
-  $$("a", menu).forEach((a) => a.addEventListener("click", () => setOpen(false)));
-  document.addEventListener("keydown", (e) => e.key === "Escape" && setOpen(false));
+window.addEventListener("scroll", onScroll, { passive: true });
+onScroll();
+
+/* ---------- scramble text ---------- */
+
+function scramble(el: HTMLElement, text: string, duration = 1.1) {
+  if (reduce) { el.textContent = text; return; }
+  gsap.killTweensOf(el);
+  el.classList.add("is-scrambling");
+  gsap.to(el, {
+    duration,
+    scrambleText: { text, chars: SCRAMBLE_CHARS, speed: 0.6, revealDelay: duration * 0.35 },
+    ease: "none",
+    onComplete: () => el.classList.remove("is-scrambling"),
+  });
+}
+function scrambleOnView(el: HTMLElement) {
+  const text = el.textContent?.replace(/\s+/g, " ").trim() ?? "";
+  // keep layout stable: lock height while scrambling
+  ScrollTrigger.create({
+    trigger: el, start: "top 88%", once: true,
+    onEnter: () => {
+      el.style.minHeight = `${el.offsetHeight}px`;
+      scramble(el, text, 1.2);
+    },
+  });
+}
+if (!reduce) {
+  $$("[data-scramble]").forEach(scrambleOnView);
+  $$("[data-scramble-in]").forEach((el) => {
+    const text = el.textContent?.replace(/\s+/g, " ").trim() ?? "";
+    el.style.minHeight = `${el.offsetHeight}px`;
+    gsap.delayedCall(0.6, () => scramble(el, text, 1.6));
+  });
 }
 
-/* ---------- about: fact carousel ---------- */
+/* ---------- hero: animated halftone landscape ---------- */
 
-const factsRoot = $("[data-facts]");
-if (factsRoot) {
-  const embla = EmblaCarousel($(".facts__viewport", factsRoot)!, { loop: true, duration: 30 });
-  const dots = $$<HTMLButtonElement>("[data-dot]", factsRoot);
-  const sync = () => dots.forEach((d, j) => d.setAttribute("aria-current", String(embla.selectedScrollSnap() === j)));
-  dots.forEach((d, j) => d.addEventListener("click", () => embla.scrollTo(j)));
-  embla.on("select", sync);
-  sync();
-  let timer: number | undefined;
-  let touched = false;
-  const stop = () => window.clearInterval(timer);
+const hero = $<HTMLCanvasElement>("[data-halftone]");
+if (hero) {
+  const ctx = hero.getContext("2d")!;
+  let w = 0, h = 0, visible = true, last = 0;
+  const cell = 10;
+  const resize = () => {
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    w = hero.clientWidth; h = hero.clientHeight;
+    hero.width = w * dpr; hero.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+  const draw = (t: number) => {
+    ctx.fillStyle = "#1d1813";
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "#d8c7aa";
+    ctx.beginPath();
+    const s = t * 0.001;
+    for (let y = cell / 2; y < h; y += cell) {
+      const ny = y / h;
+      for (let x = cell / 2; x < w; x += cell) {
+        const f =
+          Math.sin(x * 0.0042 + s * 0.15) * Math.cos(y * 0.006 - s * 0.1) +
+          0.5 * Math.sin((x + y) * 0.009 + s * 0.25) +
+          0.25 * Math.sin(x * 0.021 - y * 0.013 + s * 0.4);
+        const c = (f * 2.2) % 1;
+        const band = 1 - Math.abs((c < 0 ? c + 1 : c) - 0.5) * 2; // contour ridges
+        const v = Math.pow(band, 3) * (0.25 + 0.75 * ny) + 0.08 * ny;
+        const r = v * cell * 0.55;
+        if (r > 0.35) { ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, Math.PI * 2); }
+      }
+    }
+    ctx.fill();
+  };
+  const loop = (t: number) => {
+    if (visible && t - last > 33) { draw(t); last = t; }
+    requestAnimationFrame(loop);
+  };
+  resize();
+  window.addEventListener("resize", () => { resize(); draw(performance.now()); });
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(hero);
+  if (reduce) draw(12000);
+  else requestAnimationFrame(loop);
+}
+
+/* ---------- founder: halftone portrait (photo if provided, monogram otherwise) ---------- */
+
+const portrait = $<HTMLCanvasElement>("[data-portrait]");
+if (portrait) {
+  const N = 56, size = 480, cell = size / N;
+  const sample = document.createElement("canvas");
+  sample.width = sample.height = N;
+  const sctx = sample.getContext("2d", { willReadFrequently: true })!;
+  const out = portrait.getContext("2d")!;
+  portrait.width = portrait.height = size;
+  let lum: number[] = [];
+
+  const paint = (k: number) => {
+    out.clearRect(0, 0, size, size);
+    out.fillStyle = "#121212";
+    out.beginPath();
+    for (let i = 0; i < N * N; i++) {
+      const x = (i % N) * cell + cell / 2, y = Math.floor(i / N) * cell + cell / 2;
+      const r = (1 - lum[i]) * cell * 0.62 * k;
+      if (r > 0.3) { out.moveTo(x + r, y); out.arc(x, y, r, 0, Math.PI * 2); }
+    }
+    out.fill();
+  };
+  const readLum = () => {
+    const d = sctx.getImageData(0, 0, N, N).data;
+    lum = Array.from({ length: N * N }, (_, i) => (0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]) / 255);
+  };
   const start = () => {
-    stop();
-    if (!reduceQuery.matches && !touched) timer = window.setInterval(() => embla.scrollNext(), 6000);
+    readLum();
+    if (reduce) { paint(1); return; }
+    const o = { k: 0 };
+    paint(0);
+    gsap.to(o, { k: 1, duration: 1.6, ease: "power2.out", onUpdate: () => paint(o.k), scrollTrigger: { trigger: portrait, start: "top 85%", once: true } });
   };
-  factsRoot.addEventListener("mouseenter", stop);
-  factsRoot.addEventListener("mouseleave", start);
-  factsRoot.addEventListener("focusin", stop);
-  embla.on("pointerDown", () => { touched = true; stop(); });
-  start();
+  const src = portrait.dataset.src;
+  if (src) {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(img.width, img.height);
+      sctx.fillStyle = "#fff"; sctx.fillRect(0, 0, N, N);
+      sctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, N, N);
+      start();
+    };
+    img.src = src;
+  } else {
+    document.fonts.ready.then(() => {
+      sctx.fillStyle = "#fff"; sctx.fillRect(0, 0, N, N);
+      const g = sctx.createRadialGradient(N / 2, N / 2, 4, N / 2, N / 2, N * 0.7);
+      g.addColorStop(0, "#fff"); g.addColorStop(1, "#bbb");
+      sctx.fillStyle = g; sctx.fillRect(0, 0, N, N);
+      sctx.fillStyle = "#000";
+      sctx.font = `900 ${N * 0.5}px Archivo, Arial, sans-serif`;
+      sctx.textAlign = "center"; sctx.textBaseline = "middle";
+      sctx.fillText("NL", N / 2, N / 2 + 2);
+      start();
+    });
+  }
 }
 
-/* ---------- expeditions: card rail + route dialogs ---------- */
+/* ---------- routes: pinned list, centre frame, scrambled description ---------- */
 
-const railRoot = $("[data-rail]");
-if (railRoot) {
-  const embla = EmblaCarousel(railRoot, { dragFree: true, containScroll: "trimSnaps", align: "start" });
-  const prev = $<HTMLButtonElement>("[data-rail-prev]")!;
-  const next = $<HTMLButtonElement>("[data-rail-next]")!;
-  prev.addEventListener("click", () => embla.scrollPrev());
-  next.addEventListener("click", () => embla.scrollNext());
-  const sync = () => { prev.disabled = !embla.canScrollPrev(); next.disabled = !embla.canScrollNext(); };
-  embla.on("select", sync).on("reInit", sync).on("scroll", sync);
+const routesRoot = $("[data-routes]");
+if (routesRoot) {
+  const items = $$("[data-route-item]", routesRoot);
+  const links = $$<HTMLAnchorElement>("[data-route-link]", routesRoot);
+  const text = $("[data-route-text]", routesRoot);
+  const cta = $<HTMLAnchorElement>("[data-route-cta]", routesRoot);
+  const teasers = items.map((it) => $(".routes__mobile .justify", it)?.textContent?.trim() ?? "");
+  let active = -1;
+  const setActive = (i: number) => {
+    if (i === active) return;
+    active = i;
+    items.forEach((it, j) => it.classList.toggle("is-active", j === i));
+    links.forEach((a, j) => a.classList.toggle("is-active", j === i));
+    if (cta && links[i]) cta.href = links[i].href;
+    if (text && teasers[i]) scramble(text, teasers[i], 0.9);
+  };
+  items.forEach((it, i) => {
+    ScrollTrigger.create({
+      trigger: it, start: "top center", end: "bottom+=36 center",
+      onToggle: (self) => self.isActive && setActive(i),
+    });
+  });
+  setActive(0);
+  // clicking a list item on the home page: travel to its plate first, then the link works as usual
+}
+
+/* ---------- itinerary rows: the row in the middle of the screen is active ---------- */
+
+$$("[data-itin]").forEach((list) => {
+  const rows = $$("[data-itin-row]", list);
+  rows.forEach((row) => {
+    ScrollTrigger.create({
+      trigger: row, start: "top 55%", end: "bottom 55%",
+      onToggle: (self) => {
+        if (!self.isActive) return;
+        rows.forEach((r) => r.classList.toggle("is-active", r === row));
+      },
+    });
+  });
+});
+
+/* ---------- carousels ---------- */
+
+const papersRoot = $("[data-papers]");
+if (papersRoot) {
+  const embla = EmblaCarousel(papersRoot, { loop: true, align: "center", duration: 32 });
+  const slides = embla.slideNodes();
+  const sync = () => slides.forEach((s, i) => s.classList.toggle("is-snapped", i === embla.selectedScrollSnap()));
+  embla.on("select", sync).on("reInit", sync);
   sync();
+  $("[data-papers-prev]")?.addEventListener("click", () => embla.scrollPrev());
+  $("[data-papers-next]")?.addEventListener("click", () => embla.scrollNext());
 }
 
-$$<HTMLButtonElement>("[data-open]").forEach((btn) => {
-  const dlg = $<HTMLDialogElement>(`#route-${btn.dataset.open}`);
-  if (!dlg) return;
+const exploreRoot = $("[data-explore]");
+if (exploreRoot) {
+  const embla = EmblaCarousel(exploreRoot, { align: "start", containScroll: "trimSnaps", dragFree: true });
+  $("[data-explore-prev]")?.addEventListener("click", () => embla.scrollPrev());
+  $("[data-explore-next]")?.addEventListener("click", () => embla.scrollNext());
+}
+
+/* ---------- FAQ cells ---------- */
+
+$$<HTMLButtonElement>("[data-faq]").forEach((btn) => {
+  const answer = $(`#${btn.getAttribute("aria-controls")}`)!;
   btn.addEventListener("click", () => {
-    dlg.showModal();
-    lenis?.stop();
-    if (!reduceQuery.matches) {
-      gsap.fromTo(dlg, { opacity: 0, y: 40, scale: 0.98 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out" });
-      gsap.from($$(".route__steps li", dlg), { opacity: 0, x: 24, duration: 0.5, stagger: 0.07, delay: 0.2, ease: "power2.out" });
+    const open = btn.getAttribute("aria-expanded") !== "true";
+    btn.setAttribute("aria-expanded", String(open));
+    answer.hidden = !open;
+    if (open && !reduce) {
+      const p = $("p", answer)!;
+      scramble(p, p.textContent?.trim() ?? "", 0.7);
     }
-  });
-  dlg.addEventListener("close", () => { lenis?.start(); btn.focus(); });
-  $("[data-close]", dlg)?.addEventListener("click", () => dlg.close());
-  // click on the backdrop closes
-  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
-});
-
-/* ---------- profile tabs ---------- */
-
-const tabsRoot = $("[data-tabs]");
-if (tabsRoot) {
-  const tabs = $$<HTMLButtonElement>('[role="tab"]', tabsRoot);
-  const ink = $("[data-tabs-ink]", tabsRoot)!;
-  const moveInk = (t: HTMLElement) => {
-    ink.style.transform = `translateX(${t.offsetLeft}px) scaleX(${t.offsetWidth / 100})`;
-  };
-  const select = (t: HTMLButtonElement, focus = false) => {
-    tabs.forEach((x) => {
-      const on = x === t;
-      x.setAttribute("aria-selected", String(on));
-      x.tabIndex = on ? 0 : -1;
-      const panel = $(`#${x.getAttribute("aria-controls")}`)!;
-      panel.hidden = !on;
-      if (on && !reduceQuery.matches) gsap.from(panel.children, { opacity: 0, y: 14, duration: 0.45, stagger: 0.05, ease: "power2.out" });
-    });
-    moveInk(t);
-    if (focus) t.focus();
     ScrollTrigger.refresh();
-  };
-  tabs.forEach((t, i) => {
-    t.addEventListener("click", () => select(t));
-    t.addEventListener("keydown", (e) => {
-      const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-      if (d) select(tabs[(i + d + tabs.length) % tabs.length], true);
-    });
-  });
-  const current = () => tabs.find((t) => t.getAttribute("aria-selected") === "true")!;
-  moveInk(current());
-  window.addEventListener("resize", () => moveInk(current()));
-  document.fonts.ready.then(() => moveInk(current()));
-}
-
-/* ---------- FAQ accordion (native details, animated height) ---------- */
-
-$$<HTMLDetailsElement>("[data-acc]").forEach((d) => {
-  const summary = $("summary", d)!;
-  const body = $("[data-acc-body]", d)!;
-  summary.addEventListener("click", (e) => {
-    if (reduceQuery.matches) return;
-    e.preventDefault();
-    if (d.open) {
-      gsap.to(body, { height: 0, duration: 0.4, ease: "power2.inOut", onComplete: () => { d.open = false; gsap.set(body, { clearProps: "height" }); ScrollTrigger.refresh(); } });
-    } else {
-      d.open = true;
-      gsap.fromTo(body, { height: 0 }, { height: "auto", duration: 0.5, ease: "power3.out", onComplete: () => ScrollTrigger.refresh() });
-    }
   });
 });
 
-/* ---------- scroll + load motion ---------- */
+/* ---------- load + scroll motion (skipped entirely for reduced motion) ---------- */
 
 const mm = gsap.matchMedia();
-
-mm.add(
-  {
-    motion: "(prefers-reduced-motion: no-preference)",
-    desktop: "(prefers-reduced-motion: no-preference) and (min-width: 861px)",
-    mobile: "(prefers-reduced-motion: no-preference) and (max-width: 860px)",
-  },
-  (ctx) => {
-    const { motion, desktop, mobile } = ctx.conditions as Record<string, boolean>;
-    if (!motion) return; // reduced motion: CSS defaults are the final states
-
-    /* 1. hero load sequence: landscape settles, title lines rise */
-    const land = $("[data-hero-land]");
-    const title = $("[data-hero-title]");
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-    if (land) tl.from(land, { scale: 1.15, opacity: 0, duration: 1.6 }, 0);
-    if (title) {
-      SplitText.create(title, {
-        type: "lines", mask: "lines", autoSplit: true,
-        onSplit: (self) => tl.from(self.lines, { yPercent: 110, duration: 1.1, stagger: 0.09 }, 0.25),
-      });
-    }
-    tl.from($$("[data-hero-fade]"), { opacity: 0, y: 18, duration: 0.7, stagger: 0.1 }, 0.9);
-
-    // contour layers drift at different depths, and the hero copy lifts away
-    $$("[data-layer]").forEach((layer, i) => {
-      gsap.to(layer, { yPercent: -(i + 1) * 7, ease: "none", scrollTrigger: { trigger: "[data-hero]", start: "top top", end: "bottom top", scrub: true } });
-      gsap.fromTo(layer, { xPercent: -1.5 * (i + 1) }, { xPercent: 1.5 * (i + 1), duration: 14 + i * 4, ease: "sine.inOut", repeat: -1, yoyo: true });
+mm.add("(prefers-reduced-motion: no-preference)", () => {
+  const delay = html.classList.contains("pt-in") ? 0.5 : 0;
+  const tl = gsap.timeline({ delay, defaults: { ease: "power3.out" } });
+  const media = $("[data-hero-media]");
+  if (media) tl.from(media, { scale: 1.12, duration: 1.8 }, 0);
+  const title = $("[data-hero-title]");
+  if (title) {
+    SplitText.create(title, {
+      type: "lines", mask: "lines", autoSplit: true,
+      onSplit: (self) => tl.from(self.lines, { yPercent: 105, duration: 1, stagger: 0.08 }, 0.2),
     });
-    gsap.to("[data-hero-content]", { yPercent: -18, opacity: 0.2, ease: "none", scrollTrigger: { trigger: "[data-hero]", start: "top top", end: "bottom top", scrub: true } });
+  }
+  const fades = $$("[data-hero-fade]");
+  if (fades.length) tl.from(fades, { opacity: 0, y: 14, duration: 0.6 }, 0.9);
 
-    /* 2. section headlines */
-    $$("[data-reveal]").forEach((h) => {
-      SplitText.create(h, {
-        type: "lines", mask: "lines", autoSplit: true,
-        onSplit: (self) => gsap.from(self.lines, {
-          yPercent: 110, duration: 0.9, stagger: 0.08, ease: "power3.out",
-          scrollTrigger: { trigger: h, start: "top 85%", once: true },
-        }),
-      });
+  // hero media drifts slower than the page
+  if (media) gsap.to(media, { yPercent: 18, ease: "none", scrollTrigger: { trigger: media.parentElement, start: "top top", end: "bottom top", scrub: true } });
+
+  $$("[data-reveal]").forEach((h) => {
+    SplitText.create(h, {
+      type: "lines", mask: "lines", autoSplit: true,
+      onSplit: (self) => gsap.from(self.lines, {
+        yPercent: 105, duration: 0.9, stagger: 0.08, ease: "power3.out",
+        scrollTrigger: { trigger: h, start: "top 85%", once: true },
+      }),
     });
+  });
 
-    /* 3. counters */
-    $$("[data-count]").forEach((el) => {
-      const end = Number(el.dataset.count);
-      const dec = Number(el.dataset.decimals);
-      const o = { v: 0 };
-      el.textContent = (0).toFixed(dec);
-      gsap.to(o, {
-        v: end, duration: 1.8, ease: "power2.out",
-        scrollTrigger: { trigger: el, start: "top 90%", once: true },
-        onUpdate: () => { el.textContent = o.v.toFixed(dec); },
-      });
-    });
-
-    /* 4. parallax inside framed media */
-    $$("[data-parallax]").forEach((frame) => {
-      const inner = $("[data-parallax-inner]", frame);
-      if (inner) gsap.fromTo(inner, { yPercent: -6 }, { yPercent: 6, ease: "none", scrollTrigger: { trigger: frame, start: "top bottom", end: "bottom top", scrub: true } });
-    });
-
-    /* 6. expedition cards enter once */
-    gsap.from($$("[data-card]"), {
-      x: 60, opacity: 0, duration: 0.9, stagger: 0.08, ease: "power3.out",
-      scrollTrigger: { trigger: "[data-rail]", start: "top 80%", once: true },
-    });
-
-    /* 5. the journey: pinned horizontal travel on desktop, drawn line on mobile */
-    const journey = $("[data-journey]");
-    const track = $("[data-journey-track]");
-    const line = $("[data-journey-line]");
-    const stationsEls = $$("[data-station]");
-    if (journey && track && line && desktop) {
-      journey.classList.add("is-pinned");
-      const distance = () => track.scrollWidth - innerWidth;
-      const travel = gsap.to(track, {
-        x: () => -distance(), ease: "none",
-        scrollTrigger: {
-          trigger: "[data-journey-pin]", start: "top top", end: () => `+=${distance()}`,
-          pin: true, scrub: 0.6, invalidateOnRefresh: true, anticipatePin: 1,
-        },
-      });
-      gsap.fromTo(line, { scaleX: 0 }, {
-        scaleX: 1, ease: "none",
-        scrollTrigger: { trigger: "[data-journey-pin]", start: "top top", end: () => `+=${distance()}`, scrub: 0.6, invalidateOnRefresh: true },
-      });
-      stationsEls.forEach((s) => {
-        gsap.from(s.children, {
-          opacity: 0, y: 30, duration: 0.6, stagger: 0.05, ease: "power2.out",
-          scrollTrigger: { trigger: s, containerAnimation: travel, start: "left 85%", toggleActions: "play none none reverse" },
-        });
-      });
-      return () => journey.classList.remove("is-pinned");
-    }
-    if (journey && line && mobile) {
-      gsap.fromTo(line, { scaleX: 1, scaleY: 0 }, { scaleY: 1, ease: "none", scrollTrigger: { trigger: track, start: "top 70%", end: "bottom 70%", scrub: true } });
-    }
-  },
-);
+  $$("[data-parallax]").forEach((frame) => {
+    const inner = $("[data-parallax-inner]", frame);
+    if (inner) gsap.fromTo(inner, { yPercent: -6 }, { yPercent: 6, ease: "none", scrollTrigger: { trigger: frame, start: "top bottom", end: "bottom top", scrub: true } });
+  });
+});
 
 document.fonts.ready.then(() => ScrollTrigger.refresh());
 window.addEventListener("load", () => ScrollTrigger.refresh());

@@ -1,35 +1,35 @@
 ---
 import Base from "../layouts/Base.astro";
-import Nav from "../components/Nav.astro";
 import Hero from "../components/Hero.astro";
-import Stats from "../components/Stats.astro";
-import About from "../components/About.astro";
-import Marquee from "../components/Marquee.astro";
-import Journey from "../components/Journey.astro";
-import Expeditions from "../components/Expeditions.astro";
+import Founder from "../components/Founder.astro";
+import Routes from "../components/Routes.astro";
+import Feature from "../components/Feature.astro";
+import Itinerary from "../components/Itinerary.astro";
 import Profile from "../components/Profile.astro";
-import Teaching from "../components/Teaching.astro";
-import WhatIDo from "../components/WhatIDo.astro";
+import Papers from "../components/Papers.astro";
 import Faq from "../components/Faq.astro";
 import Footer from "../components/Footer.astro";
-import { person } from "../data/site";
-// "Words from others" is left out until docs/content.md has real quotes.
+import { milestones } from "../data/site";
+// "Words from others" stays out until docs/content.md has real quotes.
 ---
 <Base
-  title={`${person.name}, academic journey`}
-  description="Dang Nguyen Le: data mining and educational machine learning researcher at Ton Duc Thang University, valedictorian, English teacher in Ho Chi Minh City."
+  title="Nguyen Le, academic journey"
+  description="Dang Nguyen Le (published as Nguyen Le): data mining and educational machine learning researcher at Ton Duc Thang University, valedictorian, English teacher."
 >
-  <Nav />
-  <Hero />
   <main id="main">
-    <Stats />
-    <About />
-    <Marquee />
-    <Journey />
-    <Expeditions />
+    <Hero />
+    <Founder />
+    <Routes />
+    <Feature />
+    <Itinerary
+      id="journey"
+      heading="The route<br />so far"
+      intro="From a school in Can Tho to a research post in Ho Chi Minh City, by way of Regensburg. Nine stops, all from the CV."
+      rows={milestones}
+      cta={{ label: "Plan the next stop", href: "#contact" }}
+    />
     <Profile />
-    <Teaching />
-    <WhatIDo />
+    <Papers />
     <Faq />
   </main>
   <Footer />

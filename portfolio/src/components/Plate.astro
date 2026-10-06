@@ -1,0 +1,135 @@
+---
+// "Film plate" for a route: a sepia, grainy illustration drawn from the subject itself.
+// Drop a real photo at public/media/<id>.jpg and it is used instead (with the same film tone).
+import { existsSync } from "node:fs";
+import type { PlateKind } from "../data/site";
+
+interface Props { kind: PlateKind; id?: string; alt?: string; class?: string; eager?: boolean }
+const { kind, id, alt = "", class: cls, eager = false } = Astro.props;
+const photo = id && existsSync(`public/media/${id}.jpg`) ? `${import.meta.env.BASE_URL}media/${id}.jpg` : null;
+const uid = `p${Math.random().toString(36).slice(2, 8)}`;
+
+// lattice: Hasse diagram of the subsets of {a,b,c,d}, as a constellation over a ridge
+const items = ["a", "b", "c", "d"];
+const subsets: string[][] = [];
+for (let m = 0; m < 16; m++) subsets.push(items.filter((_, i) => m & (1 << i)));
+const pos = new Map<string, [number, number]>();
+[0, 1, 2, 3, 4].forEach((k) => {
+  const lv = subsets.filter((s) => s.length === k);
+  lv.forEach((s, i) => pos.set(s.join(""), [200 + (i - (lv.length - 1) / 2) * 56, 228 - k * 44]));
+});
+const edges: [string, string][] = [];
+subsets.forEach((s) => items.forEach((it) => { if (!s.includes(it)) edges.push([s.join(""), [...s, it].sort().join("")]); }));
+const hot = new Set(["", "a", "ab", "abc", "c", "bc"]);
+
+// utility: profits stand above the waterline, losses hang below it
+const util = [38, -16, 62, 28, -34, 50, -12, 70, 18, -28, 44, -20, 30];
+
+const ridge = "M0 214 L40 196 L70 204 L110 170 L150 188 L190 150 L230 176 L270 160 L310 184 L350 166 L400 190 L400 320 L0 320Z";
+---
+<div class:list={["plate", cls]}>
+  {photo ? (
+    <img src={photo} alt={alt} loading={eager ? "eager" : "lazy"} decoding="async" />
+  ) : (
+    <svg viewBox="0 0 400 320" preserveAspectRatio="xMidYMid slice" role={alt ? "img" : undefined} aria-label={alt || undefined} aria-hidden={alt ? undefined : "true"}>
+      <defs>
+        <linearGradient id={`${uid}-sky`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#e7dcc6" />
+          <stop offset="0.6" stop-color="#c9b28e" />
+          <stop offset="1" stop-color="#8e7454" />
+        </linearGradient>
+        <radialGradient id={`${uid}-vig`} cx="0.5" cy="0.45" r="0.75">
+          <stop offset="0.55" stop-color="#000" stop-opacity="0" />
+          <stop offset="1" stop-color="#1d1813" stop-opacity="0.55" />
+        </radialGradient>
+        <filter id={`${uid}-grain`} x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" />
+          <feColorMatrix values="0 0 0 0 0.11  0 0 0 0 0.09  0 0 0 0 0.07  0 0 0 0.55 0" />
+        </filter>
+      </defs>
+      <rect width="400" height="320" fill={`url(#${uid}-sky)`} />
+
+      {kind === "lattice" && (
+        <g>
+          <path d={ridge} fill="#4a3c2c" opacity="0.85" />
+          {edges.map(([a, b]) => {
+            const [x1, y1] = pos.get(a)!; const [x2, y2] = pos.get(b)!;
+            const h = hot.has(a) && hot.has(b);
+            return <line x1={x1} y1={y1 - 40} x2={x2} y2={y2 - 40} stroke={h ? "#2a2119" : "#6f5a43"} stroke-width={h ? 2.2 : 1} opacity={h ? 1 : 0.7} />;
+          })}
+          {subsets.map((s) => {
+            const [x, y] = pos.get(s.join(""))!;
+            const h = hot.has(s.join(""));
+            return <circle cx={x} cy={y - 40} r={h ? 6 : 4} fill={h ? "#2a2119" : "#efe6d4"} stroke="#2a2119" stroke-width="1.4" />;
+          })}
+        </g>
+      )}
+
+      {kind === "utility" && (
+        <g>
+          <rect y="196" width="400" height="124" fill="#7a6247" />
+          <line x1="0" x2="400" y1="196" y2="196" stroke="#2a2119" stroke-width="1.5" />
+          {util.map((u, i) => (
+            u > 0
+              ? <g><rect x={16 + i * 29} y={196 - u * 1.6} width="20" height={u * 1.6} fill="#2a2119" /><rect x={16 + i * 29} y="196" width="20" height={u * 0.9} fill="#2a2119" opacity="0.28" /></g>
+              : <rect x={16 + i * 29} y="196" width="20" height={-u * 1.9} fill="#e7dcc6" opacity="0.85" />
+          ))}
+          <path d="M0 64 C 120 60, 260 72, 400 52" fill="none" stroke="#2a2119" stroke-width="1.5" stroke-dasharray="6 6" />
+        </g>
+      )}
+
+      {kind === "cohort" && (
+        <g>
+          <rect width="400" height="320" fill="#b89d77" />
+          {Array.from({ length: 675 }, (_, i) => {
+            const x = i % 27, y = Math.floor(i / 27);
+            const jx = Math.sin(i * 12.9898) * 2.2, jy = Math.cos(i * 78.233) * 2.2;
+            return (
+              <g>
+                <ellipse cx={20 + x * 13.6 + jx + 2.5} cy={20 + y * 11.6 + jy + 2.5} rx="3.2" ry="2.2" fill="#5c4a36" opacity="0.5" />
+                <circle cx={20 + x * 13.6 + jx} cy={20 + y * 11.6 + jy} r="2.6" fill={x > 19 ? "#efe6d4" : "#2a2119"} />
+              </g>
+            );
+          })}
+        </g>
+      )}
+
+      {kind === "danube" && (
+        <g>
+          <path d="M0 150 L60 128 L120 140 L180 116 L250 132 L320 112 L400 128 L400 200 L0 200Z" fill="#6f5a43" />
+          <path d="M0 200 C 100 186, 220 214, 400 196 L400 320 L0 320Z" fill="#9c8263" />
+          <path d="M0 236 C 120 222, 260 256, 400 232" fill="none" stroke="#e7dcc6" stroke-width="1" opacity="0.6" />
+          <rect x="0" y="176" width="400" height="10" fill="#3a2f23" />
+          {Array.from({ length: 9 }, (_, i) => (
+            <path d={`M${i * 46 - 6} 186 h44 v14 a22 18 0 0 0 -44 0 z`} fill="#3a2f23" />
+          ))}
+          <path d="M210 176 l0 -64 l8 -18 l8 18 l0 64z M236 176 l0 -64 l8 -18 l8 18 l0 64z" fill="#2a2119" />
+        </g>
+      )}
+
+      {kind === "classroom" && (
+        <g>
+          <rect width="400" height="320" fill="#cdb895" />
+          <rect x="70" y="34" width="260" height="96" fill="#2f2a22" />
+          <text x="200" y="76" text-anchor="middle" font-family="Archivo, Arial" font-weight="800" font-size="26" fill="#e7dcc6">FLYERS · PET</text>
+          <text x="200" y="110" text-anchor="middle" font-family="Archivo, Arial" font-weight="800" font-size="26" fill="#e7dcc6">IELTS</text>
+          {[0, 1, 2, 3].map((r) => {
+            const y = 170 + r * 36, w = 46 + r * 12, n = 4 + (r > 1 ? 1 : 0);
+            return Array.from({ length: n }, (_, c) => (
+              <rect x={200 - (n * (w + 12)) / 2 + c * (w + 12)} y={y} width={w} height={14 + r * 3} fill="#5c4a36" />
+            ));
+          })}
+        </g>
+      )}
+
+      <rect width="400" height="320" fill={`url(#${uid}-vig)`} />
+      <rect width="400" height="320" filter={`url(#${uid}-grain)`} opacity="0.55" />
+    </svg>
+  )}
+</div>
+
+<style>
+  .plate { position: relative; overflow: hidden; background: var(--film-dark); }
+  .plate svg, .plate img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .plate img { filter: sepia(0.55) saturate(0.8) contrast(1.05); }
+</style>

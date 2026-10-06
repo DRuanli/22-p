@@ -1,69 +1,112 @@
 @import "./tokens.css";
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 5rem; }
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
 
 body {
   margin: 0;
-  background: var(--mist);
-  color: var(--deep);
-  font-family: var(--sans);
-  font-size: var(--step-0);
-  line-height: 1.6;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: var(--fs-mono);
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   overflow-x: clip;
 }
+p { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
 
 h1, h2, h3 {
-  font-family: var(--serif);
-  font-weight: 400;
-  line-height: 1.05;
-  letter-spacing: -0.015em;
+  font-family: var(--display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.98;
   margin: 0;
-  font-optical-sizing: auto;
 }
-h2 { font-size: var(--step-4); }
-h3 { font-size: var(--step-2); line-height: 1.15; }
-h2 em, h1 em { font-style: italic; color: var(--silt); }
-p { margin: 0; }
+h1 { font-size: var(--fs-h1); }
+h2 { font-size: var(--fs-h2); }
 
-a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
-a:hover { text-decoration-thickness: 2px; }
-:focus-visible { outline: 3px solid var(--silt); outline-offset: 3px; border-radius: 4px; }
+/* 12-column page grid; headings start on column 5 like the reference */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  padding-inline: var(--gutter);
+}
+.c-head { grid-column: 5 / span 6; }
+.c-right { grid-column: 9 / span 4; }
+.c-left { grid-column: 1 / span 3; }
+.c-center { grid-column: 5 / span 4; }
+.c-full { grid-column: 1 / -1; }
+@media (max-width: 860px) {
+  .c-head, .c-right, .c-left, .c-center { grid-column: 1 / -1; }
+}
 
-.wrap { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--gutter); }
-.section { padding-block: var(--space-xl); }
-.lede { font-size: var(--step-1); line-height: 1.5; max-width: 34ch; color: var(--ink-muted); }
+.section { padding-block: var(--section); }
+.justify { text-align: justify; hyphens: auto; }
+.muted { color: var(--grey); }
+.label { color: var(--grey); font-size: var(--fs-mono-s); }
 
+/* bracket buttons */
 .btn {
-  display: inline-flex; align-items: center; gap: 0.6em;
-  padding: 0.85em 1.5em;
-  border-radius: var(--r-pill);
-  background: var(--silt); color: var(--deep);
-  font-weight: 600; text-decoration: none;
-  transition: background 0.3s var(--ease-out);
+  display: inline-flex; align-items: center; gap: 0.9em;
+  padding: 0.95em 1.6em;
+  background: var(--red); color: #fff;
+  font: 500 var(--fs-mono) / 1 var(--mono); letter-spacing: 0.04em; text-transform: uppercase;
+  text-decoration: none; border: 0; cursor: pointer;
+  transition: background 0.3s;
 }
-.btn:hover { background: var(--silt-soft); }
+.btn::before { content: "["; }
+.btn::after { content: "]"; }
+.btn:hover { background: var(--red-dark); }
+.btn--outline { background: transparent; border: 1px solid currentColor; }
+.btn--outline:hover { background: #fff; color: var(--ink); }
+.btn--tight { gap: 0.25em; padding: 0.7em 1.1em; }
 
-.icon-btn {
-  width: 3rem; height: 3rem; border-radius: var(--r-pill);
-  border: 1px solid currentColor; background: transparent; color: inherit;
-  display: grid; place-items: center; cursor: pointer;
-  transition: background 0.3s, color 0.3s, opacity 0.3s;
-}
-.icon-btn:hover:not(:disabled) { background: var(--deep); color: var(--mist); }
-.icon-btn:disabled { opacity: 0.3; cursor: default; }
+.bracket { text-decoration: none; white-space: nowrap; }
+.bracket::before { content: "[ "; }
+.bracket::after { content: " ]"; }
+.bracket:hover { color: var(--red); }
 
-.visually-hidden {
-  position: absolute; width: 1px; height: 1px; overflow: hidden;
-  clip: rect(0 0 0 0); white-space: nowrap;
+/* red crop marks at the four corners */
+.crop {
+  --c: var(--red); --l: 14px; --t: 1.5px; --o: 6px;
+  position: relative; padding: var(--o);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / var(--l) var(--t),
+    linear-gradient(var(--c), var(--c)) top left / var(--t) var(--l),
+    linear-gradient(var(--c), var(--c)) top right / var(--l) var(--t),
+    linear-gradient(var(--c), var(--c)) top right / var(--t) var(--l),
+    linear-gradient(var(--c), var(--c)) bottom left / var(--l) var(--t),
+    linear-gradient(var(--c), var(--c)) bottom left / var(--t) var(--l),
+    linear-gradient(var(--c), var(--c)) bottom right / var(--l) var(--t),
+    linear-gradient(var(--c), var(--c)) bottom right / var(--t) var(--l);
+  background-repeat: no-repeat;
 }
-.skip { position: absolute; left: 1rem; top: -4rem; z-index: 10; background: var(--silt); color: var(--deep); padding: 0.5rem 1rem; border-radius: var(--r-pill); }
+
+/* ruled grid with red ticks where the columns meet the top rule */
+.ruled { display: grid; border-top: 1px solid var(--line); position: relative; }
+.ruled > * { position: relative; border-left: 1px solid var(--line); padding: 1.5rem 1.25rem 2rem; }
+.ruled > *:last-child { border-right: 1px solid var(--line); }
+.ruled > *::before {
+  content: ""; position: absolute; left: -1px; top: -1px; width: 14px; height: 10px;
+  border-top: 1.5px solid var(--red); border-left: 1.5px solid var(--red);
+}
+.ruled > *:not(:first-child)::before { left: -14px; width: 28px; border-left: 0; background: linear-gradient(var(--red), var(--red)) center top / 1.5px 10px no-repeat; }
+.ruled > *:last-child::after {
+  content: ""; position: absolute; right: -1px; top: -1px; width: 14px; height: 10px;
+  border-top: 1.5px solid var(--red); border-right: 1.5px solid var(--red);
+}
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: 1rem; top: -4rem; z-index: 100; background: var(--red); color: #fff; padding: 0.6rem 1rem; }
 .skip:focus { top: 1rem; }
-.btn--ghost { background: transparent; color: inherit; border: 1px solid currentColor; }
-.btn--ghost:hover { background: var(--mist); color: var(--deep); border-color: var(--mist); }
-html { scroll-padding-top: 5rem; }
-.sec-head { display: flex; justify-content: space-between; align-items: end; gap: 1.5rem 3rem; flex-wrap: wrap; margin-bottom: var(--space-l); }
-.sec-head .lede { margin-top: 1rem; }
+
+/* scramble state */
+.is-scrambling { color: var(--red); }

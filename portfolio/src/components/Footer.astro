@@ -2,38 +2,33 @@
 import { existsSync } from "node:fs";
 import { person } from "../data/site";
 const base = import.meta.env.BASE_URL;
-// Put a public version of the CV at public/cv.pdf and the download link appears.
 const hasCv = existsSync("public/cv.pdf");
-const year = new Date().getFullYear();
 ---
 <footer class="foot" id="contact" aria-labelledby="contact-h">
-  <div class="wrap">
-    <h2 id="contact-h" data-reveal>Write to <em>me</em></h2>
-    <p class="foot__lede">For research collaboration, English classes, or anything on this page.</p>
-    <a class="foot__mail" href={`mailto:${person.email}`}>{person.email}</a>
-    <ul class="foot__links">
-      <li><a href={person.scholar} rel="noopener" target="_blank">Google Scholar</a></li>
-      <li><a href={person.orcid} rel="noopener" target="_blank">ORCID</a></li>
-      {hasCv && <li><a href={`${base}cv.pdf`} download>Download CV (PDF)</a></li>}
-    </ul>
-    <p class="foot__small">© {year} {person.name}, {person.location}</p>
+  <div class="grid">
+    <h2 id="contact-h" class="c-head" data-reveal>Let's plan<br />the next route</h2>
+    <p class="c-right justify foot__text" data-scramble>
+      Research collaboration, a question about one of the papers, or English classes:
+      write to me and I will answer by email.
+    </p>
+    <div class="c-full foot__mail crop">
+      <a href={`mailto:${person.email}`}>{person.email}</a>
+    </div>
+    <nav class="c-full foot__links" aria-label="Profiles">
+      <a class="bracket" href={person.scholar} target="_blank" rel="noopener">Google Scholar</a>
+      <a class="bracket" href={person.orcid} target="_blank" rel="noopener">ORCID {person.orcidId}</a>
+      {hasCv && <a class="bracket" href={`${base}cv.pdf`} download>Download CV</a>}
+    </nav>
+    <p class="c-full foot__small muted">© {new Date().getFullYear()} {person.name}. {person.location}.</p>
   </div>
 </footer>
 
 <style>
-  .foot { background: var(--deep); color: var(--mist); padding-block: var(--space-xl) 2rem; }
-  .foot h2 :global(em) { color: var(--silt-soft); }
-  .foot__lede { margin-top: 1rem; color: var(--reed-light); font-size: var(--step-1); }
-  .foot__mail {
-    display: inline-block; margin-top: var(--space-l);
-    font-family: var(--serif); font-size: var(--step-3); color: var(--silt-soft);
-    overflow-wrap: anywhere;
-  }
-  .foot__links { list-style: none; padding: 0; margin: var(--space-l) 0 0; display: flex; flex-wrap: wrap; gap: 0.75rem; }
-  .foot__links a {
-    display: inline-block; padding: 0.6em 1.2em; border: 1px solid #3b5a4f; border-radius: var(--r-pill);
-    text-decoration: none; transition: border-color 0.3s;
-  }
-  .foot__links a:hover { border-color: var(--silt); }
-  .foot__small { margin-top: var(--space-xl); color: var(--reed); font-size: var(--step--1); }
+  .foot { padding-block: var(--section) 2rem; }
+  .foot__text { margin-top: 2rem; }
+  .foot__mail { margin-top: 4rem; padding: 2.5rem 1rem; text-align: center; }
+  .foot__mail a { font: 800 clamp(1.4rem, 0.6rem + 3.6vw, 3.6rem)/1 var(--display); text-decoration: none; text-transform: uppercase; overflow-wrap: anywhere; }
+  .foot__mail a:hover { color: var(--red); }
+  .foot__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 2.5rem; margin-top: 2rem; }
+  .foot__small { margin-top: 5rem; font-size: var(--fs-mono-s); }
 </style>
