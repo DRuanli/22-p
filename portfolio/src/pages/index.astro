@@ -9,14 +9,38 @@ import Profile from "../components/Profile.astro";
 import Publications from "../components/Publications.astro";
 import Faq from "../components/Faq.astro";
 import Footer from "../components/Footer.astro";
-import { milestones } from "../data/site";
+import { milestones, person, papers } from "../data/site";
+
+// Structured data so search engines can link the person, profiles and articles.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: person.name,
+  alternateName: person.publishedAs,
+  jobTitle: "Researcher",
+  email: `mailto:${person.email}`,
+  affiliation: { "@type": "CollegeOrUniversity", name: "Ton Duc Thang University" },
+  alumniOf: [
+    { "@type": "CollegeOrUniversity", name: "Ton Duc Thang University" },
+    { "@type": "CollegeOrUniversity", name: "OTH Regensburg" },
+  ],
+  knowsLanguage: ["vi", "en", "de", "zh"],
+  sameAs: [person.scholar, person.orcid],
+  subjectOf: papers.map((p) => ({
+    "@type": "ScholarlyArticle",
+    headline: p.title,
+    isPartOf: { "@type": "Periodical", name: p.venue },
+    ...(p.href ? { url: p.href } : {}),
+  })),
+};
 // "Words from others" stays out until docs/content.md has real quotes.
 ---
 <Base
   title="Nguyen Le, academic journey"
+  jsonLd={jsonLd}
   description="Dang Nguyen Le (published as Nguyen Le): data mining and educational machine learning researcher at Ton Duc Thang University, valedictorian, English teacher."
 >
-  <main id="main">
+  <main id="main" tabindex="-1">
     <Hero />
     <Founder />
     <Routes />

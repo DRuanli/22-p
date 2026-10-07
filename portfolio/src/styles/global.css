@@ -1,6 +1,7 @@
 @import "./tokens.css";
 
 *, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; scroll-padding-top: 5rem; }
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
@@ -109,4 +110,14 @@ h2 { font-size: var(--fs-h2); }
 .skip:focus { top: 1rem; }
 
 /* scramble state */
-.is-scrambling { color: var(--red); }
+.is-scrambling { color: var(--red); overflow: hidden; overflow-wrap: anywhere; word-break: break-all; }
+
+main:focus { outline: none; }
+
+/* stacked ruled grids (one column): rules between cells instead of floating column ticks */
+@media (max-width: 860px) {
+  .ruled { border-top: 0; }
+  .ruled > * { border-top: 1px solid var(--line); border-right: 1px solid var(--line); }
+  .ruled > *:not(:first-child)::before { left: -1px; width: 14px; border-left: 1.5px solid var(--red); background: none; }
+  .ruled > *:last-child::after { display: none; }
+}

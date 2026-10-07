@@ -6,12 +6,24 @@ const base = import.meta.env.BASE_URL;
     <span class="nav__logo-1">Nguyen Le</span>
     <span class="nav__logo-2">Academic journey</span>
   </a>
+  <p class="nav__section" aria-hidden="true"><span data-nav-num>01</span><span class="nav__dash"></span><span data-nav-name>Start</span></p>
   <nav class="nav__links" aria-label="Primary">
     <a class="bracket" href={`${base}#routes`}>Routes</a>
     <a class="bracket" href={`${base}#publications`}>Publications</a>
     <a class="bracket" href={`${base}#profile`}>Profile</a>
   </nav>
   <a class="btn nav__cta" href={`${base}#contact`} data-nav-cta>Get in touch</a>
+  <button class="nav__menu-btn bracket" type="button" aria-expanded="false" aria-controls="nav-menu" data-menu-btn>Menu</button>
+  <div class="nav__menu" id="nav-menu" data-menu hidden>
+    <nav aria-label="Menu">
+      <a href={`${base}#routes`} data-menu-link>Routes</a>
+      <a href={`${base}#publications`} data-menu-link>Publications</a>
+      <a href={`${base}#journey`} data-menu-link>Journey</a>
+      <a href={`${base}#profile`} data-menu-link>Profile</a>
+      <a href={`${base}#contact`} data-menu-link>Contact</a>
+    </nav>
+    <a class="nav__menu-mail" href="mailto:elio.ruanli@gmail.com">elio.ruanli@gmail.com</a>
+  </div>
 </header>
 
 <style>
@@ -23,25 +35,50 @@ const base = import.meta.env.BASE_URL;
   }
   .nav > * { pointer-events: auto; }
   /* colour flips over dark sections (set from motion.ts) instead of a costly blend mode */
-  .nav__logo, .nav__links { color: var(--ink); transition: color 0.35s, opacity 0.3s; }
+  .nav__logo, .nav__links, .nav__menu-btn { color: var(--ink); transition: color 0.35s, opacity 0.3s; }
   .nav.is-dark .nav__logo, .nav.is-dark .nav__links { color: #fff; }
   .nav__logo { display: grid; text-decoration: none; line-height: 0.9; white-space: nowrap; }
   .nav__logo-1 { font: 900 1.45rem/0.9 var(--display); letter-spacing: -0.01em; }
   .nav__logo-2 { font: 700 0.62rem/1.2 var(--display); letter-spacing: 0.06em; margin-top: 0.15rem; }
   .nav__links { display: flex; gap: 2rem; margin-left: auto; }
+  .nav__section {
+    display: flex; align-items: center; gap: 0.75rem; margin: 0 0 0 3.5rem;
+    font-size: var(--fs-mono-s); color: var(--ink); transition: color 0.35s;
+  }
+  .nav.is-dark .nav__section { color: #fff; }
+  .nav__dash { width: 2.25rem; height: 1px; background: var(--red); }
+  [data-nav-num] { color: var(--red); }
+  @media (max-width: 960px) { .nav__section { display: none; } }
   .nav__links a { font-size: var(--fs-mono-s); }
   .nav__cta {
     position: absolute; right: var(--gutter); top: 0.9rem;
-    opacity: 0; transform: translateY(-120%); pointer-events: none;
-    transition: opacity 0.4s var(--ease), transform 0.5s var(--ease), background 0.3s;
+    opacity: 0; transform: translateY(-120%); pointer-events: none; visibility: hidden;
+    transition: opacity 0.4s var(--ease), transform 0.5s var(--ease), background 0.3s, visibility 0s 0.5s;
   }
-  .nav.is-cta .nav__cta { opacity: 1; transform: none; pointer-events: auto; }
-  .nav.is-cta .nav__links { opacity: 0; pointer-events: none; }
+  .nav.is-cta .nav__cta { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+  .nav.is-cta .nav__links { opacity: 0; pointer-events: none; visibility: hidden; transition: color 0.35s, opacity 0.3s, visibility 0s 0.3s; }
   .nav__links { transition: opacity 0.3s; }
+  .nav__menu-btn { display: none; background: none; border: 0; padding: 0.6rem 0; font: inherit; color: inherit; cursor: pointer; text-transform: uppercase; }
+  .nav.is-dark .nav__menu-btn { color: #fff; }
+  .nav__menu {
+    position: fixed; inset: 0; z-index: -1; background: var(--film-dark); color: #fff;
+    display: flex; flex-direction: column; justify-content: space-between; padding: 6.5rem var(--gutter) 2.5rem;
+  }
+  .nav__menu[hidden] { display: none; }
+  .nav__menu nav { display: grid; gap: 0.4rem; }
+  .nav__menu nav a { font: 800 clamp(2.2rem, 10vw, 3.4rem)/1 var(--display); text-transform: uppercase; text-decoration: none; }
+  .nav__menu nav a:hover { color: var(--red); }
+  .nav__menu-mail { color: var(--grey-2); overflow-wrap: anywhere; }
+  .nav.is-menu .nav__logo, .nav.is-menu .nav__menu-btn { color: #fff; }
   @media (max-width: 860px) {
-    /* on small screens text runs under the bar, so give it paper behind it outside dark sections */
+    /* on small screens text runs under the bar, so give it a backdrop */
     .nav { transition: background 0.35s; }
     .nav:not(.is-dark) { background: var(--paper); }
+    .nav.is-dark:not(.is-menu) { background: linear-gradient(180deg, rgba(20, 16, 12, 0.85), rgba(20, 16, 12, 0)); }
   }
-  @media (max-width: 600px) { .nav__links { gap: 1rem; } .nav__cta { padding: 0.75em 1em; font-size: 0.7rem; } }
+  @media (max-width: 600px) {
+    .nav__links, .nav__cta { display: none; }
+    .nav__menu-btn { display: block; margin-left: auto; }
+  }
+
 </style>

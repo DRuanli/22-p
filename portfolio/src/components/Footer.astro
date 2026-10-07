@@ -4,7 +4,7 @@ import { person } from "../data/site";
 const base = import.meta.env.BASE_URL;
 const hasCv = existsSync("public/cv.pdf");
 ---
-<footer class="foot" id="contact" aria-labelledby="contact-h">
+<footer class="foot" id="contact" aria-labelledby="contact-h" data-section="Contact">
   <div class="grid">
     <h2 id="contact-h" class="c-head" data-reveal>Let's plan<br />the next route</h2>
     <p class="c-right justify foot__text" data-scramble>
@@ -19,7 +19,10 @@ const hasCv = existsSync("public/cv.pdf");
       <a class="bracket" href={person.orcid} target="_blank" rel="noopener">ORCID {person.orcidId}</a>
       {hasCv && <a class="bracket" href={`${base}cv.pdf`} download>Download CV</a>}
     </nav>
-    <p class="c-full foot__small muted">© {new Date().getFullYear()} {person.name}. {person.location}.</p>
+    <div class="c-full foot__bottom">
+      <p class="foot__small muted">© {new Date().getFullYear()} {person.name}. {person.location}.</p>
+      <a class="bracket foot__top" href="#main" data-to-top>Back to top</a>
+    </div>
   </div>
 </footer>
 
@@ -30,5 +33,6 @@ const hasCv = existsSync("public/cv.pdf");
   .foot__mail a { font: 800 clamp(1.4rem, 0.6rem + 3.6vw, 3.6rem)/1 var(--display); text-decoration: none; text-transform: uppercase; overflow-wrap: anywhere; }
   .foot__mail a:hover { color: var(--red); }
   .foot__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem 2.5rem; margin-top: 2rem; }
-  .foot__small { margin-top: 5rem; font-size: var(--fs-mono-s); }
+  .foot__bottom { margin-top: 5rem; display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+  .foot__small { font-size: var(--fs-mono-s); }
 </style>

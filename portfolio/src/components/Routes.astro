@@ -4,9 +4,9 @@ import Plate from "./Plate.astro";
 const base = import.meta.env.BASE_URL;
 const href = (id: string) => `${base}routes/${id}/`;
 ---
-<section class="routes" id="routes" aria-labelledby="routes-h" data-routes>
+<section class="routes" id="routes" aria-labelledby="routes-h" data-routes data-section="Routes">
   <div class="grid routes__head">
-    <h2 id="routes-h" class="c-head" data-reveal>Routes<br />which don't exist<br />in textbooks</h2>
+    <h2 id="routes-h" class="c-head" data-reveal>Five routes,<br />one notebook</h2>
   </div>
 
   <div class="routes__body">
@@ -17,6 +17,7 @@ const href = (id: string) => `${base}routes/${id}/`;
           <li>
             <a href={href(r.id)} data-route-link={i} class:list={[{ "is-active": i === 0 }]} data-transition>
               <span>{r.name}</span><span>{r.length}</span>
+              <span class="routes__bar" aria-hidden="true"><span data-route-bar></span></span>
             </a>
           </li>
         ))}
@@ -25,7 +26,8 @@ const href = (id: string) => `${base}routes/${id}/`;
       <div class="routes__frame c-center crop" aria-hidden="true">
         <a class="btn btn--tight routes__discover" href={href(routes[0].id)} data-route-cta data-transition tabindex="-1">Discover</a>
       </div>
-      <p class="routes__text c-right justify" data-route-text aria-live="polite">{routes[0].teaser}</p>
+      <p class="routes__text c-right justify" data-route-text aria-hidden="true">{routes[0].teaser}</p>
+      <p class="visually-hidden" aria-live="polite" data-route-live></p>
     </div>
 
     <!-- scrolling plates -->
@@ -60,6 +62,10 @@ const href = (id: string) => `${base}routes/${id}/`;
   .routes__list { list-style: none; margin: 0; padding: 0 0 0 calc(var(--gutter) * 0.9); display: grid; gap: 0.35rem; }
   .routes__list a { display: flex; justify-content: space-between; gap: 1rem; text-decoration: none; color: var(--grey); transition: color 0.3s; }
   .routes__list a:hover, .routes__list a.is-active { color: var(--red); }
+  .routes__list a { position: relative; padding-bottom: 0.3rem; }
+  .routes__bar { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--line); opacity: 0; transition: opacity 0.4s; }
+  .routes__bar span { display: block; height: 100%; background: var(--red); transform-origin: 0 50%; transform: scaleX(0); }
+  .routes__list a.is-active .routes__bar { opacity: 1; }
 
   .routes__frame {
     --o: 6px; aspect-ratio: 352 / 310; align-self: center; pointer-events: none;

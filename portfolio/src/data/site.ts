@@ -115,7 +115,7 @@ export const routes: Route[] = [
     teaser:
       "From the Mekong to the Danube. An exchange semester at OTH Regensburg in Germany, funded by a merit-based TL-Stiftung scholarship. German began here, and my English classes in Vietnam kept going online.",
     overview:
-      "An exchange semester at Ostbayerische Technische Hochschule Regensburg, funded by a merit-based TL-Stiftung scholarship. Solo trips in Germany, France and Austria followed, and my English classes continued online the whole time.",
+      "An exchange semester at Ostbayerische Technische Hochschule Regensburg, funded by a merit-based TL-Stiftung scholarship. My English classes continued online the whole time. Solo trips have taken me to Germany, France, Austria and Taiwan.",
     stats: [
       { label: "Duration", value: "6 months" },
       { label: "Period", value: "03/2024 – 09/2024" },
@@ -150,8 +150,8 @@ export const routes: Route[] = [
     steps: [
       { when: "2023", where: "MAC English centre", title: "First classes", body: "Part-time teacher in Ho Chi Minh City." },
       { when: "Level 01", where: "Flyers", title: "Young learners", body: "Cambridge Young Learners classes." },
-      { when: "Level 02", where: "PET", title: "B1 Preliminary", body: "Lower- and upper-secondary learners." },
-      { when: "Level 03", where: "IELTS", title: "Academic English", body: "Upper-secondary students." },
+      { when: "Level 02", where: "PET", title: "B1 Preliminary", body: "Cambridge B1 Preliminary classes." },
+      { when: "Level 03", where: "IELTS", title: "Academic English", body: "IELTS preparation classes." },
       { when: "2024", where: "Online, from Germany", title: "Never paused", body: "Teaching continued online throughout the exchange semester." },
     ],
     cta: { label: "Ask about classes", href: "mailto:elio.ruanli@gmail.com?subject=English%20classes" },
@@ -160,7 +160,7 @@ export const routes: Route[] = [
 
 export const milestones = [
   { when: "2019", where: "Can Tho", title: "Upper-secondary school", body: "Nguyen Viet Hong Upper-Secondary School, until 2022. Chinese begins here." },
-  { when: "09/2022", where: "Ho Chi Minh City", title: "B.Sc. Computer Science", body: "Ton Duc Thang University, on an Academic Merit Scholarship." },
+  { when: "09/2022", where: "Ho Chi Minh City", title: "B.Sc. Computer Science", body: "Ton Duc Thang University; Academic Merit Scholarship in several semesters." },
   { when: "2023", where: "MAC English centre", title: "First English classes", body: "Part-time teacher for primary to upper-secondary learners." },
   { when: "03/2024", where: "Regensburg", title: "Exchange semester", body: "OTH Regensburg on a merit-based TL-Stiftung scholarship." },
   { when: "09/2024", where: "Ton Duc Thang University", title: "First research project", body: "Begins in Design and Analysis of Algorithms; becomes TUFCI." },
@@ -180,8 +180,8 @@ export const profileStats = [
 export const facts = [
   { label: "Now", value: "Researcher, Faculty of IT, Ton Duc Thang University" },
   { label: "2026", value: "Valedictorian, B.Sc. Computer Science" },
-  { label: "2024", value: "Exchange semester, OTH Regensburg" },
   { label: "2025", value: "Intern, FPT Information System" },
+  { label: "2024", value: "Exchange semester, OTH Regensburg" },
 ];
 
 export type Paper = {
