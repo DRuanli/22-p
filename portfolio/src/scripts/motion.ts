@@ -247,15 +247,19 @@ if (routesRoot) {
 
 $$("[data-itin]").forEach((list) => {
   const rows = $$("[data-itin-row]", list);
-  rows.forEach((row) => {
-    ScrollTrigger.create({
-      trigger: row, start: "top 55%", end: "bottom 55%",
-      onToggle: (self) => {
-        if (!self.isActive) return;
-        rows.forEach((r) => r.classList.toggle("is-active", r === row));
-      },
+  // Whichever row is nearest the line at 55% of the viewport is active, so the first and
+  // last rows also get their turn (and one row is always lit while the list is on screen).
+  const update = () => {
+    const line = innerHeight * 0.55;
+    let best = rows[0], bestD = Infinity;
+    rows.forEach((r) => {
+      const b = r.getBoundingClientRect();
+      const d = Math.abs(b.top + b.height / 2 - line);
+      if (d < bestD) { bestD = d; best = r; }
     });
-  });
+    rows.forEach((r) => r.classList.toggle("is-active", r === best));
+  };
+  ScrollTrigger.create({ trigger: list, start: "top bottom", end: "bottom top", onUpdate: update, onRefresh: update });
 });
 
 /* ---------- carousels ---------- */
