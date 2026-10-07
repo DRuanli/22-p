@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://druanli.github.io/22-p/sitemap.xml

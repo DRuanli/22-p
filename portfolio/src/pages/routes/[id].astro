@@ -16,8 +16,8 @@ const heading = route.months
   : `Route<br />overview`;
 ---
 <Base title={`${route.name}: ${route.title} · Nguyen Le`} description={route.overview}>
-  <main id="main">
-    <section class="dhero" data-dark aria-labelledby="dhero-h">
+  <main id="main" tabindex="-1">
+    <section class="dhero" data-dark data-section="Route" aria-labelledby="dhero-h">
       <div class="dhero__media" data-hero-media><Plate kind={route.plate} id={route.id} eager /></div>
       <div class="dhero__inner grid">
         <h1 id="dhero-h" class="dhero__title" data-hero-title>{route.name}</h1>
@@ -27,7 +27,7 @@ const heading = route.months
     <div class="grid"><div class="c-full dhero__marks" aria-hidden="true"></div></div>
     <div class="dstats"><StatRow items={route.stats} /></div>
 
-    <Itinerary heading={heading} intro={route.overview} rows={route.steps} cta={route.cta} id="overview" />
+    <Itinerary section="Overview" heading={heading} intro={route.overview} rows={route.steps} cta={route.cta} id="overview" />
     <Explore exclude={route.id} />
   </main>
   <Footer />

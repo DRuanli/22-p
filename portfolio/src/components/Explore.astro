@@ -6,7 +6,7 @@ const { exclude } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const list = routes.filter((r) => r.id !== exclude);
 ---
-<section class="section explore" aria-labelledby="explore-h">
+<section class="section explore" aria-labelledby="explore-h" data-section="Explore">
   <div class="grid">
     <h2 id="explore-h" class="c-head" data-reveal>Continue<br />exploring</h2>
   </div>

@@ -6,6 +6,7 @@ const base = import.meta.env.BASE_URL;
     <span class="nav__logo-1">Nguyen Le</span>
     <span class="nav__logo-2">Academic journey</span>
   </a>
+  <p class="nav__section" aria-hidden="true"><span data-nav-num>01</span><span class="nav__dash"></span><span data-nav-name>Start</span></p>
   <nav class="nav__links" aria-label="Primary">
     <a class="bracket" href={`${base}#routes`}>Routes</a>
     <a class="bracket" href={`${base}#publications`}>Publications</a>
@@ -29,6 +30,14 @@ const base = import.meta.env.BASE_URL;
   .nav__logo-1 { font: 900 1.45rem/0.9 var(--display); letter-spacing: -0.01em; }
   .nav__logo-2 { font: 700 0.62rem/1.2 var(--display); letter-spacing: 0.06em; margin-top: 0.15rem; }
   .nav__links { display: flex; gap: 2rem; margin-left: auto; }
+  .nav__section {
+    display: flex; align-items: center; gap: 0.75rem; margin: 0 0 0 3.5rem;
+    font-size: var(--fs-mono-s); color: var(--ink); transition: color 0.35s;
+  }
+  .nav.is-dark .nav__section { color: #fff; }
+  .nav__dash { width: 2.25rem; height: 1px; background: var(--red); }
+  [data-nav-num] { color: var(--red); }
+  @media (max-width: 960px) { .nav__section { display: none; } }
   .nav__links a { font-size: var(--fs-mono-s); }
   .nav__cta {
     position: absolute; right: var(--gutter); top: 0.9rem;

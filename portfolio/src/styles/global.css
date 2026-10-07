@@ -110,3 +110,5 @@ h2 { font-size: var(--fs-h2); }
 
 /* scramble state */
 .is-scrambling { color: var(--red); }
+
+main:focus { outline: none; }

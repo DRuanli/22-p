@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { facts } from "../data/site";
 const portrait = existsSync("public/portrait.jpg") ? `${import.meta.env.BASE_URL}portrait.jpg` : "";
 ---
-<section class="section founder" aria-label="About me">
+<section class="section founder" aria-label="About me" data-section="About">
   <div class="grid">
     <div class="c-full ruled founder__grid">
       <div class="founder__portrait">

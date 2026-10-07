@@ -6,6 +6,8 @@ import Lenis from "lenis";
 import EmblaCarousel from "embla-carousel";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin);
+// Phones resize the viewport when the address bar shows/hides; don't recalculate every trigger then.
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = <T extends Element = HTMLElement>(s: string, root: ParentNode = document) => root.querySelector<T>(s);
@@ -138,7 +140,7 @@ if (!reduce) {
    them (transform + opacity), so the browser never repaints the hero while it moves. */
 
 function drawHalftone(canvas: HTMLCanvasElement, time: number) {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5); // dots stay crisp; half the pixels of 2x
   const w = canvas.clientWidth, h = canvas.clientHeight;
   canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
   const ctx = canvas.getContext("2d")!;
@@ -176,11 +178,22 @@ if (heroA) {
   };
   paint();
   let rt: number | undefined;
-  window.addEventListener("resize", () => { clearTimeout(rt); rt = window.setTimeout(paint, 250); });
+  let rw = innerWidth;
+  window.addEventListener("resize", () => {
+    if (innerWidth === rw) return; // ignore mobile address-bar height changes
+    rw = innerWidth; clearTimeout(rt); rt = window.setTimeout(paint, 250);
+  });
   if (!reduce) {
-    gsap.to(heroB, { opacity: 1, duration: 7, ease: "sine.inOut", repeat: -1, yoyo: true, delay: 1 });
-    gsap.fromTo(heroA, { xPercent: -1.5, yPercent: 1 }, { xPercent: 1.5, yPercent: -1, duration: 16, ease: "sine.inOut", repeat: -1, yoyo: true });
-    gsap.fromTo(heroB, { xPercent: 1.5, yPercent: -1 }, { xPercent: -1.5, yPercent: 1, duration: 19, ease: "sine.inOut", repeat: -1, yoyo: true });
+    const loops = [
+      gsap.to(heroB, { opacity: 1, duration: 7, ease: "sine.inOut", repeat: -1, yoyo: true, delay: 1 }),
+      gsap.fromTo(heroA, { xPercent: -1.5, yPercent: 1 }, { xPercent: 1.5, yPercent: -1, duration: 16, ease: "sine.inOut", repeat: -1, yoyo: true }),
+      gsap.fromTo(heroB, { xPercent: 1.5, yPercent: -1 }, { xPercent: -1.5, yPercent: 1, duration: 19, ease: "sine.inOut", repeat: -1, yoyo: true }),
+    ];
+    // nothing to animate once the hero has scrolled away
+    ScrollTrigger.create({
+      trigger: heroA.closest("[data-hero]") ?? heroA, start: "top bottom", end: "bottom top",
+      onToggle: (self) => loops.forEach((t) => (self.isActive ? t.resume() : t.pause())),
+    });
   }
 }
 
@@ -261,10 +274,14 @@ if (routesRoot) {
     if (cta && links[i]) cta.href = links[i].href;
     if (text && teasers[i]) scramble(text, teasers[i], 0.9);
   };
+  const bars = $$("[data-route-bar]", routesRoot);
   items.forEach((it, i) => {
+    const bar = bars[i];
+    const setBar = bar ? gsap.quickSetter(bar, "scaleX") : null;
     ScrollTrigger.create({
       trigger: it, start: "top center", end: "bottom+=36 center",
       onToggle: (self) => self.isActive && setActive(i),
+      onUpdate: (self) => setBar?.(self.progress), // red bar under the active name fills as its plate passes
     });
   });
   setActive(0);
@@ -364,6 +381,47 @@ if (pubs) {
     pubs.addEventListener("pointermove", (e) => { xTo(e.clientX); yTo(e.clientY); });
   }
 }
+
+/* ---------- nav: which section am I in ---------- */
+
+const navNum = $("[data-nav-num]");
+const navName = $("[data-nav-name]");
+if (navNum && navName) {
+  const sections = $$("[data-section]");
+  let current = -1;
+  sections.forEach((sec, i) => {
+    ScrollTrigger.create({
+      trigger: sec, start: "top 50%", end: "bottom 50%",
+      onToggle: (self) => {
+        if (!self.isActive || i === current) return;
+        current = i;
+        navNum.textContent = String(i + 1).padStart(2, "0");
+        scramble(navName, sec.dataset.section ?? "", 0.5);
+      },
+    });
+  });
+}
+
+/* ---------- small touches: hover scramble on bracket links, back to top ---------- */
+
+if (!reduce && window.matchMedia("(hover: hover)").matches) {
+  $$(".bracket, .routes__list a > span:first-child").forEach((el) => {
+    if (el.children.length) return; // only plain-text labels
+    const label = el.textContent ?? "";
+    let busy = false;
+    el.addEventListener("pointerenter", () => {
+      if (busy) return;
+      busy = true;
+      gsap.to(el, { duration: 0.45, scrambleText: { text: label, chars: SCRAMBLE_CHARS, speed: 1 }, ease: "none", onComplete: () => { busy = false; } });
+    });
+  });
+}
+$$("[data-to-top]").forEach((a) => a.addEventListener("click", (e) => {
+  e.preventDefault();
+  if (lenis) lenis.scrollTo(0, { duration: 1.6 });
+  else window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+  $("#main")?.focus({ preventScroll: true });
+}));
 
 /* ---------- FAQ cells ---------- */
 

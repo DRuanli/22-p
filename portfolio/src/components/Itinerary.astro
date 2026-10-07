@@ -1,11 +1,11 @@
 ---
 // Rows like a day-by-day itinerary: when · where · title. The row nearest the
 // middle of the screen becomes active and shows its note in a red box.
-interface Props { rows: { when: string; where: string; title: string; body: string }[]; id?: string; heading: string; intro: string; cta?: { label: string; href: string } }
-const { rows, id, heading, intro, cta } = Astro.props;
+interface Props { section?: string; rows: { when: string; where: string; title: string; body: string }[]; id?: string; heading: string; intro: string; cta?: { label: string; href: string } }
+const { rows, id, heading, intro, cta, section = "Journey" } = Astro.props;
 const external = cta?.href.startsWith("http");
 ---
-<section class="section itin" id={id} aria-labelledby={`${id ?? "itin"}-h`}>
+<section class="section itin" data-section={section} id={id} aria-labelledby={`${id ?? "itin"}-h`}>
   <div class="grid">
     <h2 id={`${id ?? "itin"}-h`} class="c-head" data-reveal set:html={heading} />
     <p class="c-right justify itin__intro" data-scramble>{intro}</p>
