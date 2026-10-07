@@ -9,6 +9,7 @@ import Profile from "../components/Profile.astro";
 import Publications from "../components/Publications.astro";
 import Faq from "../components/Faq.astro";
 import Footer from "../components/Footer.astro";
+import Intro from "../components/Intro.astro";
 import { milestones, person, papers } from "../data/site";
 
 // Structured data so search engines can link the person, profiles and articles.
@@ -40,6 +41,7 @@ const jsonLd = {
   jsonLd={jsonLd}
   description="Dang Nguyen Le (published as Nguyen Le): data mining and educational machine learning researcher at Ton Duc Thang University, valedictorian, first author of three Q1 journal articles."
 >
+  <Intro id="home" lines={["From the Mekong to the Danube,", "and into the data.", "Let me show you the routes."]} />
   <main id="main" tabindex="-1">
     <Hero />
     <Founder />

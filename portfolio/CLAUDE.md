@@ -38,6 +38,10 @@ Route pages (`src/pages/routes/[id].astro`): plate hero, stat row, "What the pap
 (PaperDepth: summary, count-up figures, BarChart, contributions, data), N-month overview itinerary,
 CTA, "Continue exploring" cards. TUFCI adds PaperFigures (open-access figures); Regensburg adds
 Exchange (numbers, notebook, a DrawSVG map of every trip).
+Gallery (`src/pages/gallery.astro`): dark intro card, then GalleryPlane — an endless draggable
+plane of photos, paper figures and plates with a lens bend, a lightbox, and a List view.
+Home and Gallery open with an Intro typewriter card once per session (skipped for reduced motion
+and after a page wipe).
 
 ## Motion rules
 - Smoothness first: never redraw canvases or SVG filters per frame; animate pre-rendered

@@ -1,0 +1,114 @@
+---
+// An endless plane of frames (photos, paper figures, route plates). Drag, scroll or use the
+// arrow keys to wander; frames bend away near the edges like a lens. Click to open one.
+import { gallery } from "../data/site";
+import Plate from "./Plate.astro";
+const base = import.meta.env.BASE_URL;
+const COLS = 8, ROWS = 6, N = gallery.length;
+// deterministic pseudo-random jitter so the build is stable
+const rnd = (i: number) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const tiles = Array.from({ length: COLS * ROWS }, (_, t) => {
+  const c = t % COLS, r = Math.floor(t / COLS);
+  return { c, r, item: (c * 3 + r * 5) % N, jx: rnd(t) - 0.5, jy: rnd(t + 99) - 0.5 };
+});
+const ratio = (g: (typeof gallery)[number]) => (g.kind === "plate" ? 320 / 400 : g.h / g.w);
+---
+<div class="gal" data-gallery data-cols={COLS} data-rows={ROWS}>
+  <div class="gal__plane" data-gal-plane aria-hidden="true">
+    {tiles.map((t) => {
+      const g = gallery[t.item];
+      const rt = ratio(g);
+      const wpct = rt > 1 ? 0.46 : rt > 0.85 ? 0.56 : 0.66; // portrait frames narrower
+      return (
+        <figure class="gal__tile" data-gal-tile data-c={t.c} data-r={t.r} data-jx={t.jx.toFixed(3)} data-jy={t.jy.toFixed(3)} data-w={wpct} data-item={t.item}>
+          <div class="gal__img" style={`aspect-ratio: ${1 / rt}`}>
+            {g.kind === "plate"
+              ? <Plate kind={g.plate} id={g.id} />
+              : <img src={`${base}${g.thumb}`} alt="" loading="lazy" decoding="async" draggable="false" />}
+          </div>
+          <figcaption>{g.caption}</figcaption>
+        </figure>
+      );
+    })}
+  </div>
+
+  <div class="gal__hud">
+    <p class="gal__hint">Drag, scroll or use the arrow keys · click a frame to open it</p>
+    <button class="bracket gal__toggle" type="button" data-gal-list-btn aria-expanded="false" aria-controls="gal-list">List view</button>
+  </div>
+
+  <!-- the same archive as an ordinary, accessible grid -->
+  <section class="gal__list" id="gal-list" data-gal-list hidden aria-label="Gallery as a list">
+    <ul>
+      {gallery.map((g, i) => (
+        <li>
+          <button type="button" class="gal__litem" data-gal-open={i}>
+            <span class="gal__img" style={`aspect-ratio: ${1 / ratio(g)}`}>
+              {g.kind === "plate" ? <Plate kind={g.plate} id={g.id} /> : <img src={`${base}${g.thumb}`} alt="" loading="lazy" decoding="async" />}
+            </span>
+            <span class="gal__lcap">{g.caption}<span class="muted"> · {g.place}</span></span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <dialog class="gal__box" data-gal-box aria-labelledby="gal-box-cap">
+    <button class="gal__close bracket" type="button" data-gal-close>Close</button>
+    <div class="gal__stage" data-gal-stage></div>
+    <p class="gal__boxcap" id="gal-box-cap"><span data-gal-cap></span> <span class="muted" data-gal-place></span></p>
+  </dialog>
+
+  <!-- full-size sources for the lightbox -->
+  <template data-gal-sources>
+    {gallery.map((g, i) => (
+      <div data-src-item={i} data-caption={g.caption} data-place={g.place}>
+        {g.kind === "plate" ? <Plate kind={g.plate} id={g.id} /> : <img src={`${base}${g.src}`} alt={`${g.caption}, ${g.place}`} decoding="async" />}
+      </div>
+    ))}
+  </template>
+</div>
+
+<style>
+  .gal { position: fixed; inset: 0; background: #111; color: #fff; overflow: hidden; touch-action: none; cursor: grab; user-select: none; }
+  .gal.is-dragging { cursor: grabbing; }
+  .gal__plane { position: absolute; inset: 0; perspective: 1400px; }
+  .gal::after {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 7rem; z-index: 1; pointer-events: none;
+    background: linear-gradient(180deg, #111 35%, rgba(17, 17, 17, 0));
+  }
+  .gal__tile { position: absolute; left: 0; top: 0; margin: 0; will-change: transform; transform-origin: 50% 50%; }
+  .gal__img { display: block; overflow: hidden; background: #1d1813; }
+  .gal__img img, .gal__img :global(.plate) { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .gal__tile figcaption { margin-top: 0.5rem; font-size: 0.68rem; color: rgba(255, 255, 255, 0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gal__tile:hover figcaption { color: #fff; }
+
+  .gal__hud::before {
+    content: ""; position: absolute; left: calc(-1 * var(--gutter)); right: calc(-1 * var(--gutter)); bottom: -1.5rem; height: 6rem; z-index: -1;
+    background: linear-gradient(180deg, rgba(17, 17, 17, 0), #111 70%); pointer-events: none;
+  }
+  .gal__hud {
+    position: absolute; left: var(--gutter); right: var(--gutter); bottom: 1.5rem; z-index: 2;
+    display: flex; justify-content: space-between; align-items: center; gap: 1rem; pointer-events: none;
+  }
+  .gal__hud > * { pointer-events: auto; }
+  .gal__hint { margin: 0; font-size: var(--fs-mono-s); color: rgba(255, 255, 255, 0.55); }
+  .gal__toggle { background: none; border: 0; padding: 0.5rem 0; color: #fff; font: inherit; text-transform: uppercase; cursor: pointer; }
+
+  .gal__list { position: absolute; inset: 0; z-index: 3; overflow: auto; background: #111; padding: 6rem var(--gutter) 5rem; cursor: auto; touch-action: auto; user-select: auto; }
+  .gal__list ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 2.5rem 1.5rem; align-items: end; }
+  .gal__litem { display: grid; gap: 0.6rem; width: 100%; padding: 0; background: none; border: 0; color: #fff; text-align: left; font: inherit; text-transform: uppercase; cursor: zoom-in; }
+  .gal__lcap { font-size: var(--fs-mono-s); }
+  .gal__litem .muted { color: rgba(255, 255, 255, 0.55); }
+
+  .gal__box { width: min(92vw, 70rem); max-height: 92vh; padding: 3.5rem 1.5rem 1.5rem; border: 0; background: #111; color: #fff; overflow: auto; }
+  .gal__box::backdrop { background: rgba(0, 0, 0, 0.85); }
+  .gal__close { position: absolute; top: 1rem; right: 1.5rem; background: none; border: 0; color: #fff; font: inherit; text-transform: uppercase; cursor: pointer; }
+  .gal__stage { display: grid; place-items: center; }
+  .gal__stage img, .gal__stage :global(.plate) { max-width: 100%; max-height: 74vh; width: auto; height: auto; display: block; }
+  .gal__stage :global(.plate) { width: min(100%, 60rem); aspect-ratio: 5 / 4; height: auto; }
+  .gal__stage img[src*="papers"] { background: #fff; }
+  .gal__boxcap { margin: 1rem 0 0; font-size: var(--fs-mono-s); }
+  .gal__boxcap .muted { color: rgba(255, 255, 255, 0.55); }
+  @media (max-width: 600px) { .gal__hint { display: none; } }
+</style>

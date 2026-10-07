@@ -57,6 +57,7 @@ const anchor = { e: ["start", 12, 4], w: ["end", -12, 4], n: ["middle", 0, -14],
     <div class="c-left xch__legend">
       <p class="label">Map of the semester</p>
       <p class="xch__legend-text">Base: Regensburg. Day trips to Bamberg and Munich; Pisa via Memmingen in May; the Côte d'Azur and Monaco at the end of May; Salzburg and Vienna in June. The grey line is the Danube.</p>
+      <a class="bracket xch__gal" href={`${import.meta.env.BASE_URL}gallery/`} data-transition>Photos in the gallery</a>
     </div>
     <figure class="xch__map crop" data-xmap>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Map of trips during the exchange semester, from Regensburg to Bamberg, Munich, Pisa, the Côte d'Azur, Monaco, Marseille, Salzburg and Vienna">
@@ -99,6 +100,7 @@ const anchor = { e: ["start", 12, 4], w: ["end", -12, 4], n: ["middle", 0, -14],
   .xch__body { color: var(--ink); }
   .xch__mapwrap { margin-top: var(--section); row-gap: 1.5rem; }
   .xch__legend-text { color: var(--grey); margin-top: 0.75rem; font-size: var(--fs-mono-s); }
+  .xch__gal { display: inline-block; margin-top: 1.25rem; }
   .xch__map { margin: 0; grid-column: 4 / -1; }
   @media (max-width: 860px) { .xch__map { grid-column: 1 / -1; } }
   .xch__map svg { display: block; width: 100%; height: auto; background: var(--paper); }

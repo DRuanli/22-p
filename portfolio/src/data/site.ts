@@ -389,3 +389,24 @@ export const exchangeMap = {
   ],
   danube: [[9.99, 48.4], [11.42, 48.76], [12.1, 49.02], [13.46, 48.57], [14.29, 48.31], [15.6, 48.39], [16.37, 48.21]],
 };
+
+/* ---------- gallery: photographs, paper figures and route plates ---------- */
+
+export type GalleryItem =
+  | { kind: "photo"; src: string; thumb: string; w: number; h: number; caption: string; place: string }
+  | { kind: "figure"; src: string; thumb: string; w: number; h: number; caption: string; place: string }
+  | { kind: "plate"; plate: PlateKind; id: string; caption: string; place: string };
+
+export const gallery: GalleryItem[] = [
+  { kind: "photo", src: "media/gallery/regensburg-bridge.webp", thumb: "media/gallery/regensburg-bridge-s.webp", w: 1050, h: 1400, caption: "Stone Bridge at dusk", place: "Regensburg" },
+  { kind: "plate", plate: "lattice", id: "tufci", caption: "TUFCI, the itemset lattice", place: "PLOS ONE" },
+  { kind: "photo", src: "media/gallery/vienna-strauss.webp", thumb: "media/gallery/vienna-strauss-s.webp", w: 844, h: 1125, caption: "Johann Strauss monument, Stadtpark", place: "Vienna" },
+  { kind: "figure", src: "media/papers/tufci-fig2.webp", thumb: "media/papers/tufci-fig2.webp", w: 1600, h: 812, caption: "Depth-first vs best-first search", place: "TUFCI · Fig 2" },
+  { kind: "plate", plate: "cohort", id: "feature", caption: "675 students, one horizon", place: "ESWA" },
+  { kind: "photo", src: "media/gallery/magnolia.webp", thumb: "media/gallery/magnolia-s.webp", w: 632, h: 843, caption: "Magnolia in spring", place: "Exchange semester" },
+  { kind: "figure", src: "media/papers/tufci-fig5.webp", thumb: "media/papers/tufci-fig5.webp", w: 1600, h: 1527, caption: "Closure checks, BestFS vs DFS", place: "TUFCI · Fig 5" },
+  { kind: "photo", src: "media/gallery/vienna-athene.webp", thumb: "media/gallery/vienna-athene-s.webp", w: 1050, h: 1400, caption: "Pallas Athene fountain, Parliament", place: "Vienna" },
+  { kind: "plate", plate: "utility", id: "ptk-huim", caption: "Profits above, losses below", place: "PTK-HUIM" },
+  { kind: "figure", src: "media/papers/tufci-fig3.webp", thumb: "media/papers/tufci-fig3.webp", w: 1600, h: 1528, caption: "Runtime against the baselines", place: "TUFCI · Fig 3" },
+  { kind: "plate", plate: "danube", id: "regensburg-plate", caption: "The Danube, drawn", place: "Regensburg" },
+];

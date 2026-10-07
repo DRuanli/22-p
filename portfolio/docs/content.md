@@ -66,3 +66,9 @@
   also used as public/media/regensburg.jpg for the route).
 - Paper figures: PLOS ONE figures 2, 3, 5 (CC BY 4.0, credited). ESWA figures are not reused
   (Elsevier, all rights reserved); JKSU figures wait until the article is published.
+
+## Gallery (/gallery/) and intro cards
+- Photos supplied by the owner (Oct 2026): Stone Bridge Regensburg; Johann Strauss monument,
+  Stadtpark Vienna; Pallas Athene fountain, Parliament Vienna; magnolia in spring (place not
+  stated, captioned without one). Stored in public/media/gallery as WebP (full + -s thumb).
+- Intro card lines are the site's own words, not the reference site's.
