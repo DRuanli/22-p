@@ -23,7 +23,7 @@ photos, video, logo or brand. All content comes from `docs/content.md`.
 
 ## Sections (map of reference → this site)
 Home (`src/pages/index.astro`):
-1. Hero: full-bleed animated halftone contour canvas, uppercase headline, scrambled intro, red CTA.
+1. Hero: full-bleed cover photo (Ken Burns drift, parallax), uppercase headline, scrambled intro, red CTA.
 2. Founder: ruled 3-column grid — halftone portrait (public/portrait.jpg or monogram), text, facts.
 3. Routes: pinned list (name + length) · fixed crop frame with [ DISCOVER ] · scrambled teaser;
    film plates scroll under the frame. Each route has a detail page.
@@ -36,7 +36,8 @@ Home (`src/pages/index.astro`):
 9. Footer: big email in a crop frame, Scholar, ORCID, CV when public/cv.pdf exists.
 Route pages (`src/pages/routes/[id].astro`): plate hero, stat row, "What the paper found"
 (PaperDepth: summary, count-up figures, BarChart, contributions, data), N-month overview itinerary,
-CTA, "Continue exploring" cards.
+CTA, "Continue exploring" cards. TUFCI adds PaperFigures (open-access figures); Regensburg adds
+Exchange (numbers, notebook, a DrawSVG map of every trip).
 
 ## Motion rules
 - Smoothness first: never redraw canvases or SVG filters per frame; animate pre-rendered

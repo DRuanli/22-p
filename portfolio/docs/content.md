@@ -55,3 +55,14 @@
 - Messaging link: TODO
 - CV PDF: TODO — the DAAD CV contains phone, birth date, address and referees' emails; publish a
   trimmed version as `public/cv.pdf` and the footer link appears automatically.
+
+## Exchange semester (source: the owner's TL-Stiftung exchange report, "DangNguyenLe-3.pdf")
+- Regensburg route, `exchangeFigures`, `exchangeNotes` and the trip map in `src/data/site.ts` are
+  taken from that report. Left out on purpose (personal or sensitive for a public profile):
+  political comparisons, the Marseille incident, named individuals, private anecdotes.
+
+## Images
+- Cover: the owner's photo of the Stone Bridge, Regensburg (public/media/cover-*.{jpg,webp},
+  also used as public/media/regensburg.jpg for the route).
+- Paper figures: PLOS ONE figures 2, 3, 5 (CC BY 4.0, credited). ESWA figures are not reused
+  (Elsevier, all rights reserved); JKSU figures wait until the article is published.

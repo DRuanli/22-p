@@ -1,0 +1,121 @@
+---
+// The exchange semester in depth: numbers, a notebook of lessons, and a map of every trip.
+import { exchangeFigures, exchangeNotes, exchangeMap } from "../data/site";
+
+// Equirectangular projection, corrected for latitude ~46.5°, into an 800-wide box.
+const LON0 = 4.5, LON1 = 17.5, LAT0 = 42.8, LAT1 = 50.5, W = 800;
+const H = Math.round((W * (LAT1 - LAT0)) / ((LON1 - LON0) * Math.cos((46.5 * Math.PI) / 180)));
+const P = (lon: number, lat: number): [number, number] => [((lon - LON0) / (LON1 - LON0)) * W, ((LAT1 - lat) / (LAT1 - LAT0)) * H];
+const where = new Map<string, [number, number]>();
+where.set(exchangeMap.base[0], P(exchangeMap.base[1], exchangeMap.base[2]));
+exchangeMap.stops.forEach(([n, lon, lat]) => where.set(n, P(lon, lat)));
+// gently curved legs between consecutive stops
+const leg = (a: [number, number], b: [number, number]) => {
+  const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1];
+  const k = 0.12;
+  return `Q ${(mx - dy * k).toFixed(1)} ${(my + dx * k).toFixed(1)} ${b[0].toFixed(1)} ${b[1].toFixed(1)}`;
+};
+const trips = exchangeMap.trips.map((t) => {
+  const pts = t.map((n) => where.get(n)!);
+  return `M ${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)} ` + pts.slice(1).map((p, i) => leg(pts[i], p)).join(" ");
+});
+const danube = "M " + exchangeMap.danube.map(([lon, lat]) => P(lon, lat).map((v) => v.toFixed(1)).join(" ")).join(" L ");
+const [bx, by] = where.get("Regensburg")!;
+const anchor = { e: ["start", 12, 4], w: ["end", -12, 4], n: ["middle", 0, -14], s: ["middle", 0, 22] } as const;
+---
+<section class="section xch" data-section="Semester" aria-labelledby="xch-h">
+  <div class="grid">
+    <h2 id="xch-h" class="c-head" data-reveal>The semester<br />in detail</h2>
+    <p class="c-right justify xch__intro" data-scramble>
+      Taken from the report I wrote for the TL-Stiftung scholarship after returning: the numbers,
+      what the semester taught me, and every trip on one map.
+    </p>
+  </div>
+
+  <dl class="grid xch__figs">
+    {exchangeFigures.map((f) => (
+      <div class="xch__fig">
+        <dt class="xch__num" data-count-text>{f.value}</dt>
+        <dd class="xch__lbl">{f.label}</dd>
+      </div>
+    ))}
+  </dl>
+
+  <div class="grid">
+    <div class="c-full ruled xch__notes">
+      {exchangeNotes.map((n, i) => (
+        <article>
+          <p class="xch__no">{String(i + 1).padStart(2, "0")}</p>
+          <h3 class="xch__title">{n.title}</h3>
+          <p class="justify xch__body">{n.body}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+
+  <div class="grid xch__mapwrap">
+    <div class="c-left xch__legend">
+      <p class="label">Map of the semester</p>
+      <p class="xch__legend-text">Base: Regensburg. Day trips to Bamberg and Munich; Pisa via Memmingen in May; the Côte d'Azur and Monaco at the end of May; Salzburg and Vienna in June. The grey line is the Danube.</p>
+    </div>
+    <figure class="xch__map crop" data-xmap>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Map of trips during the exchange semester, from Regensburg to Bamberg, Munich, Pisa, the Côte d'Azur, Monaco, Marseille, Salzburg and Vienna">
+        <defs>
+          <pattern id="xgrid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#e6e6e6" stroke-width="1" /></pattern>
+        </defs>
+        <rect width={W} height={H} fill="url(#xgrid)" />
+        <path d={danube} class="xmap__river" data-xmap-river />
+        <text class="xmap__rlabel" x={P(14.6, 48.5)[0]} y={P(14.6, 48.5)[1] - 8}>Danube</text>
+        {trips.map((d) => <path d={d} class="xmap__trip" data-xmap-trip />)}
+        {exchangeMap.stops.map(([n, , , pos]) => {
+          const [x, y] = where.get(n)!;
+          const a = pos ? anchor[pos as keyof typeof anchor] : null;
+          return (
+            <g class="xmap__stop" data-xmap-stop>
+              <circle cx={x} cy={y} r="4.5" />
+              {a && <text x={x + a[1]} y={y + a[2]} text-anchor={a[0]}>{n}</text>}
+            </g>
+          );
+        })}
+        <g class="xmap__base" data-xmap-stop>
+          <circle cx={bx} cy={by} r="16" class="xmap__pulse" data-xmap-pulse data-cx={bx.toFixed(1)} data-cy={by.toFixed(1)} />
+          <circle cx={bx} cy={by} r="7" />
+          <text x={bx + 14} y={by - 10}>Regensburg</text>
+        </g>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .xch__intro { margin-top: 2rem; }
+  .xch__figs { margin: 4rem 0 3.5rem; row-gap: 2rem; }
+  .xch__fig { grid-column: span 3; border-top: 1px solid var(--line); padding-top: 1.25rem; }
+  .xch__num { font: 800 clamp(2.1rem, 1.3rem + 2.2vw, 3.4rem)/1 var(--display); white-space: nowrap; }
+  .xch__lbl { margin: 0.8rem 0 0; color: var(--grey); font-size: var(--fs-mono-s); max-width: 30ch; }
+  .xch__notes { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .xch__no { color: var(--red); }
+  .xch__title { font-size: 1.15rem; margin: 0.9rem 0 1rem; }
+  .xch__body { color: var(--ink); }
+  .xch__mapwrap { margin-top: var(--section); row-gap: 1.5rem; }
+  .xch__legend-text { color: var(--grey); margin-top: 0.75rem; font-size: var(--fs-mono-s); }
+  .xch__map { margin: 0; grid-column: 4 / -1; }
+  @media (max-width: 860px) { .xch__map { grid-column: 1 / -1; } }
+  .xch__map svg { display: block; width: 100%; height: auto; background: var(--paper); }
+  .xmap__river { fill: none; stroke: #b9c3cc; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .xmap__rlabel { fill: #8b98a3; font: 500 12px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+  .xmap__trip { fill: none; stroke: var(--red); stroke-width: 1.6; stroke-dasharray: none; stroke-linecap: round; }
+  .xmap__stop circle { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
+  .xmap__stop text, .xmap__base text { fill: var(--ink); font: 500 12px var(--mono); letter-spacing: 0.04em; text-transform: uppercase; }
+  .xmap__base circle { fill: var(--red); stroke: none; }
+  .xmap__base .xmap__pulse { fill: rgba(210, 38, 26, 0.18); }
+  .xmap__base text { font-weight: 700; font-size: 14px; }
+  @media (max-width: 960px) {
+    .xch__fig { grid-column: span 6; }
+    .xch__notes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 560px) {
+    .xch__fig { grid-column: 1 / -1; }
+    .xch__notes { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

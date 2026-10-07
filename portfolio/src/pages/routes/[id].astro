@@ -6,6 +6,8 @@ import Itinerary from "../../components/Itinerary.astro";
 import Explore from "../../components/Explore.astro";
 import Footer from "../../components/Footer.astro";
 import PaperDepth from "../../components/PaperDepth.astro";
+import PaperFigures from "../../components/PaperFigures.astro";
+import Exchange from "../../components/Exchange.astro";
 import { routes, papers, type Route } from "../../data/site";
 
 export function getStaticPaths() {
@@ -41,6 +43,9 @@ const heading = route.months
         </div>
       </section>
     )}
+
+    {route.figures && <PaperFigures figures={route.figures} />}
+    {route.id === "regensburg" && <Exchange />}
 
     <Itinerary section="Overview" heading={heading} intro={route.overview} rows={route.steps} cta={route.cta} id="overview" />
     <Explore exclude={route.id} />
