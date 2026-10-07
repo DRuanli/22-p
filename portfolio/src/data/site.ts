@@ -24,6 +24,7 @@ export type Route = {
   stats: { label: string; value: string }[];
   steps: { when: string; where: string; title: string; body: string }[];
   cta: { label: string; href: string };
+  figures?: { src: string; caption: string; credit: string }[]; // reusable figures from the paper
 };
 
 export const routes: Route[] = [
@@ -53,6 +54,11 @@ export const routes: Route[] = [
       { when: "17/06/2026", where: "PLOS ONE 21(6)", title: "Arrival", body: "Published as e0351951. Le, N., Vo, H., & Nguyen, T. Code and data on GitHub." },
     ],
     cta: { label: "Read in PLOS ONE", href: "https://doi.org/10.1371/journal.pone.0351951" },
+    figures: [
+      { src: "media/papers/tufci-fig2.webp", caption: "Fig 2. Traversal order. Depth-first search wastes work on low-support nodes before it reaches the strong one; best-first search visits it first, raises the threshold and prunes the rest.", credit: "Le, Vo & Nguyen (2026), PLOS ONE 21(6): e0351951, CC BY 4.0" },
+      { src: "media/papers/tufci-fig3.webp", caption: "Fig 3. Runtime against the external baselines TopKPFIM and ITUFP on Chess, Liquor, Mushrooms and Retail: 2–3× faster on dense data.", credit: "Le, Vo & Nguyen (2026), PLOS ONE 21(6): e0351951, CC BY 4.0" },
+      { src: "media/papers/tufci-fig5.webp", caption: "Fig 5. Closure checks with identical pruning: best-first search needs about 60% fewer than depth-first search.", credit: "Le, Vo & Nguyen (2026), PLOS ONE 21(6): e0351951, CC BY 4.0" },
+    ],
   },
   {
     id: "ptk-huim",
@@ -117,18 +123,26 @@ export const routes: Route[] = [
     months: 6,
     plate: "danube",
     teaser:
-      "From the Mekong to the Danube. An exchange semester at OTH Regensburg in Germany, funded by a merit-based TL-Stiftung scholarship. German began here; the first research project began right after.",
+      "From the Mekong to the Danube. Six months at OTH Regensburg on a TL-Stiftung scholarship: five courses, a data-science project built from scratch in three weeks, a study group of four nations working in Mandarin, and weekends from Pisa to Vienna.",
     overview:
-      "An exchange semester at Ostbayerische Technische Hochschule Regensburg, funded by a merit-based TL-Stiftung scholarship. German began here, and the first research project started in the semester after my return.",
+      "I found the TL-Stiftung scholarship two days before its deadline, renewed an expired passport in Can Tho after the award, and landed in Munich at 1 °C in March 2024. At OTH Regensburg, a partner university of Ton Duc Thang, I took five courses, among them Applied Python for Data Science, Natural Language Processing and German, and learned what self-directed study means: no attendance lists, lecturers who talk with students as peers, and classmates who live in the library.",
     stats: [
       { label: "Duration", value: "6 months" },
       { label: "Period", value: "03/2024 – 09/2024" },
       { label: "Funding", value: "TL-Stiftung scholarship" },
-      { label: "Language", value: "German A2" },
+      { label: "Courses", value: "5, plus audited classes" },
     ],
     steps: [
-      { when: "03/2024", where: "OTH Regensburg", title: "Departure", body: "Exchange semester on a merit-based TL-Stiftung scholarship." },
-      { when: "2024", where: "Germany", title: "A new language", body: "German starts with the exchange; today at A2." },
+      { when: "10/2023", where: "TL-Stiftung", title: "The award", body: "Found the scholarship two days before the deadline, applied with help from TDTU's INCRETI institute, interviewed, and was selected at the end of October." },
+      { when: "11/2023", where: "Can Tho", title: "Paperwork", body: "An expired passport, renewed in three to four weeks; then the learning agreement and the visa." },
+      { when: "03/2024", where: "Munich → Regensburg", title: "Arrival at 1 °C", body: "An OTH buddy, an hour on the train, and a Deutschlandticket that opened almost all public transport in Germany." },
+      { when: "Spring", where: "Old Town Hall", title: "Welcome", body: "International students were received by the city in Regensburg's historic Town Hall." },
+      { when: "Semester", where: "OTH Regensburg", title: "Five courses", body: "Applied Python for Data Science, a project built from scratch in three weeks; Natural Language Processing; German; and classes audited alongside." },
+      { when: "Semester", where: "Study group", title: "Four nations, one language", body: "Five students from Vietnam, Britain, Ireland and China, working together in Mandarin." },
+      { when: "04/2024", where: "Ice rink", title: "First time on ice", body: "A university ice-skating evening: several falls, then confidence." },
+      { when: "05/2024", where: "Pisa", title: "First trip abroad", body: "A night in Memmingen before a 6 a.m. flight, the Leaning Tower, and a beach triathlon straight out of Luca." },
+      { when: "End 05/2024", where: "Côte d'Azur", title: "Six cities", body: "Nice, Antibes, Cannes, Èze, Monaco on Formula 1 weekend, and Marseille." },
+      { when: "06/2024", where: "Salzburg · Vienna", title: "A favourite country", body: "Two visits to Austria: Salzburg, and Vienna in June." },
       { when: "09/2024", where: "Ho Chi Minh City", title: "Return", body: "Back home, and straight into the first research project." },
     ],
     cta: { label: "Write to me", href: "mailto:elio.ruanli@gmail.com" },
@@ -331,3 +345,47 @@ export const faq = [
   { q: "What are you working on now?", a: "I am a researcher at the Faculty of IT, Ton Duc Thang University, working with Assoc. Prof. Anh-Cuong Le." },
   { q: "How do I get in touch?", a: "By email at elio.ruanli@gmail.com." },
 ];
+
+/* ---------- the exchange semester (source: the owner's exchange report for TL-Stiftung) ---------- */
+
+export const exchangeFigures = [
+  { value: "1 °C", label: "on landing in Munich, March 2024: the first real cold" },
+  { value: "5", label: "courses taken at OTH Regensburg, with more audited" },
+  { value: "3 weeks", label: "to build the data-science project from scratch; at home it would have taken two months" },
+  { value: "4", label: "countries beyond Germany: Italy, France, Monaco and Austria" },
+];
+
+export const exchangeNotes = [
+  { title: "Self-directed study", body: "No attendance lists, and lecturers who treat students as peers. With only the course requirements to meet, I built my Python data-science project from scratch in three weeks and received the highest grade I had earned in so short a time." },
+  { title: "Ask in the moment", body: "My German classmates asked questions the second they had them and aimed for the top mark or nothing. I came home with the habit of asking during class, not after it." },
+  { title: "Protected time", body: "Cafés that close at six, shops shut on Sunday: rest is part of the plan, not what is left of it. It changed how I schedule research." },
+  { title: "An idea to bring home", body: "A supermarket checkout near my dorm recognised products without scanning, in under thirty seconds. It is the kind of applied machine learning I would like to build for shops in Vietnam." },
+];
+
+// Map stops: [name, longitude, latitude, label placement]
+export const exchangeMap = {
+  base: ["Regensburg", 12.1, 49.02] as const,
+  stops: [
+    ["Bamberg", 10.89, 49.89, "w"],
+    ["Munich", 11.58, 48.14, "s"],
+    ["Memmingen", 10.18, 47.99, "w"],
+    ["Pisa", 10.4, 43.72, "e"],
+    ["Monaco", 7.42, 43.74, "e"],
+    ["Nice", 7.26, 43.7, "n"],
+    ["Antibes", 7.12, 43.58, ""],
+    ["Cannes", 7.01, 43.55, ""],
+    ["Èze", 7.36, 43.73, ""],
+    ["Marseille", 5.37, 43.3, "s"],
+    ["Salzburg", 13.04, 47.81, "s"],
+    ["Vienna", 16.37, 48.21, "s"],
+  ] as const,
+  trips: [
+    ["Regensburg", "Bamberg"],
+    ["Regensburg", "Munich"],
+    ["Regensburg", "Memmingen", "Pisa"],
+    ["Regensburg", "Nice", "Antibes", "Cannes", "Marseille"],
+    ["Nice", "Èze", "Monaco"],
+    ["Regensburg", "Salzburg", "Vienna"],
+  ],
+  danube: [[9.99, 48.4], [11.42, 48.76], [12.1, 49.02], [13.46, 48.57], [14.29, 48.31], [15.6, 48.39], [16.37, 48.21]],
+};

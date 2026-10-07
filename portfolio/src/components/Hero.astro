@@ -3,9 +3,15 @@ const base = import.meta.env.BASE_URL;
 ---
 <section class="hero" data-hero data-dark data-section="Start" aria-labelledby="hero-h">
   <div class="hero__media" data-hero-media>
-    <canvas data-halftone aria-hidden="true"></canvas>
+    <picture>
+      <source media="(max-aspect-ratio: 4/5)" srcset={`${base}media/cover-tall.webp`} type="image/webp" />
+      <source media="(max-aspect-ratio: 4/5)" srcset={`${base}media/cover-tall.jpg`} />
+      <source srcset={`${base}media/cover-wide.webp`} type="image/webp" />
+      <img class="hero__photo" data-hero-photo src={`${base}media/cover-wide.jpg`} alt="The Stone Bridge over the Danube in Regensburg at dusk, its arches lit gold above dark water" width="1500" height="843" fetchpriority="high" decoding="async" />
+    </picture>
     <div class="hero__shade"></div>
   </div>
+  <p class="hero__caption" data-hero-fade><span class="hero__caption-dot"></span>Steinerne Brücke, Regensburg<span class="hero__coords"> · 49.02° N, 12.10° E</span></p>
 
   <div class="hero__inner grid">
     <h1 id="hero-h" class="hero__title" data-hero-title>
@@ -25,8 +31,17 @@ const base = import.meta.env.BASE_URL;
 <style>
   .hero { position: relative; height: 100svh; min-height: 34rem; overflow: hidden; color: #fff; background: var(--film-dark); }
   .hero__media { position: absolute; inset: 0; will-change: transform; }
-  .hero__media :global(canvas) { position: absolute; inset: -4%; width: 108%; height: 108%; display: block; will-change: transform, opacity; }
-  .hero__shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20, 16, 12, 0.35), rgba(20, 16, 12, 0.05) 40%, rgba(20, 16, 12, 0.55)); }
+  .hero__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 30% 60%; display: block; will-change: transform; }
+  .hero__shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 12, 22, 0.55), rgba(8, 12, 22, 0.1) 38%, rgba(8, 12, 22, 0.15) 60%, rgba(8, 12, 22, 0.7)); }
+  .hero__caption {
+    position: absolute; right: var(--gutter); bottom: 1.5rem; z-index: 2; margin: 0;
+    display: flex; align-items: center; gap: 0.6rem; font-size: var(--fs-mono-s); color: rgba(255, 255, 255, 0.75);
+  }
+  .hero__caption-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 4px rgba(210, 38, 26, 0.25); }
+  @media (max-width: 860px) {
+    .hero__caption { top: 5.25rem; bottom: auto; right: var(--gutter); }
+    .hero__coords { display: none; }
+  }
   .hero__inner { position: relative; height: 100%; grid-template-rows: auto 1fr auto; padding-block: 7.5rem 4rem; }
   .hero__title { grid-column: 1 / span 8; grid-row: 1; font-size: var(--fs-h1); }
   .hero__text { grid-column: 9 / span 4; grid-row: 2; align-self: center; max-width: 30rem; }

@@ -2,10 +2,11 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
+import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import Lenis from "lenis";
 import EmblaCarousel from "embla-carousel";
 
-gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin);
+gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin, DrawSVGPlugin);
 // Phones resize the viewport when the address bar shows/hides; don't recalculate every trigger then.
 ScrollTrigger.config({ ignoreMobileResize: true });
 
@@ -504,6 +505,36 @@ if (horizon && !reduce) {
   gsap.fromTo(horizon,
     { x: () => -frame.clientWidth * 0.62 },
     { x: 0, ease: "none", scrollTrigger: { trigger: frame, start: "top 85%", end: "center 45%", scrub: true, invalidateOnRefresh: true } });
+}
+
+/* ---------- cover photo: a slow Ken Burns drift, paused once the hero is gone ---------- */
+
+const coverPhoto = $<HTMLImageElement>("[data-hero-photo]");
+if (coverPhoto) {
+  const refresh = () => ScrollTrigger.refresh();
+  if (coverPhoto.complete) refresh(); else coverPhoto.addEventListener("load", refresh, { once: true });
+  if (!reduce) {
+    const drift = gsap.fromTo(coverPhoto, { scale: 1.1, xPercent: -1.5 }, { scale: 1.02, xPercent: 1.5, duration: 26, ease: "sine.inOut", repeat: -1, yoyo: true });
+    ScrollTrigger.create({
+      trigger: coverPhoto.closest("[data-hero]") ?? coverPhoto, start: "top bottom", end: "bottom top",
+      onToggle: (self) => (self.isActive ? drift.resume() : drift.pause()),
+    });
+  }
+}
+
+/* ---------- exchange map: trips draw themselves as the map scrolls in ---------- */
+
+const xmap = $("[data-xmap]");
+if (xmap && !reduce) {
+  const river = $$("[data-xmap-river]", xmap);
+  const trips = $$("[data-xmap-trip]", xmap);
+  const stops = $$("[data-xmap-stop]", xmap);
+  const tl = gsap.timeline({ scrollTrigger: { trigger: xmap, start: "top 80%", end: "bottom 70%", scrub: 0.6 } });
+  tl.from(river, { drawSVG: "0%", duration: 1, ease: "none" }, 0)
+    .from(stops, { opacity: 0, scale: 0.4, transformOrigin: "50% 50%", stagger: 0.06, duration: 0.3 }, 0.1)
+    .from(trips, { drawSVG: "0%", duration: 1.4, stagger: 0.25, ease: "none" }, 0.3);
+  const pulse = $("[data-xmap-pulse]", xmap);
+  if (pulse) gsap.fromTo(pulse, { scale: 0.6, opacity: 0.9, svgOrigin: `${pulse.dataset.cx} ${pulse.dataset.cy}` }, { scale: 1.8, opacity: 0, duration: 1.8, ease: "power1.out", repeat: -1, svgOrigin: `${pulse.dataset.cx} ${pulse.dataset.cy}` });
 }
 
 /* ---------- nav: which section am I in ---------- */
