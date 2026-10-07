@@ -22,7 +22,7 @@ const navType = (performance.getEntriesByType("navigation")[0] as PerformanceNav
 const scrollKey = `scroll:${location.pathname}`;
 window.addEventListener("pagehide", () => { try { sessionStorage.setItem(scrollKey, String(window.scrollY)); } catch {} });
 
-const lenis = reduce ? null : new Lenis({ lerp: 0.1, anchors: { offset: -80 } });
+const lenis = reduce || document.body.dataset.smooth === "off" ? null : new Lenis({ lerp: 0.1, anchors: { offset: -80 } });
 if (lenis) {
   lenis.on("scroll", ScrollTrigger.update);
   gsap.ticker.add((t) => lenis.raf(t * 1000));
@@ -63,6 +63,40 @@ if (panel && !reduce) {
     });
   });
 }
+
+/* ---------- intro title card: typed line by line, then the page is revealed ---------- */
+
+let introPending = html.classList.contains("intro-on");
+const introDone: Promise<void> = new Promise((resolve) => {
+  const el = $("[data-intro]");
+  if (!el || !introPending) { el?.remove(); resolve(); return; }
+  try { sessionStorage.setItem(`intro:${el.dataset.intro}`, "1"); } catch {}
+  lenis?.stop();
+  const lines = $$("[data-intro-line]", el);
+  const finish = () => {
+    introPending = false;
+    html.classList.remove("intro-on");
+    el.remove();
+    lenis?.start();
+    ScrollTrigger.refresh();
+    resolve();
+  };
+  const tl = gsap.timeline({ onComplete: finish });
+  lines.forEach((ln, i) => {
+    const text = ln.dataset.introLine ?? "";
+    const o = { n: 0 };
+    tl.call(() => { lines.forEach((l) => l.classList.remove("is-typing")); ln.classList.add("is-typing"); ln.textContent = text.charAt(0); });
+    tl.to(o, { n: text.length, duration: text.length * 0.032, ease: "none", onUpdate: () => { ln.textContent = text.slice(0, Math.max(1, Math.round(o.n))); } });
+    tl.to({}, { duration: i === lines.length - 1 ? 0 : 0.22 });
+  });
+  tl.call(() => { lines.at(-1)?.classList.replace("is-typing", "is-last"); });
+  tl.to({}, { duration: 0.75 });
+  tl.to(el, { opacity: 0, duration: 0.7, ease: "power2.inOut" });
+  // any click or key skips straight to the page
+  const skip = () => { if (tl.progress() < 0.9) tl.progress(0.9); };
+  el.addEventListener("click", skip);
+  window.addEventListener("keydown", skip, { once: true });
+});
 
 /* ---------- nav + rulers: one batched update per frame, no layout reads while scrolling ---------- */
 
@@ -144,7 +178,7 @@ if (!reduce) {
   $$("[data-scramble]").forEach(scrambleOnView);
   $$("[data-scramble-in]").forEach((el) => {
     const text = el.textContent?.replace(/\s+/g, " ").trim() ?? "";
-    gsap.delayedCall(0.6, () => scramble(el, text, 1.4));
+    introDone.then(() => gsap.delayedCall(0.6, () => scramble(el, text, 1.4)));
   });
 }
 
@@ -537,6 +571,116 @@ if (xmap && !reduce) {
   if (pulse) gsap.fromTo(pulse, { scale: 0.6, opacity: 0.9, svgOrigin: `${pulse.dataset.cx} ${pulse.dataset.cy}` }, { scale: 1.8, opacity: 0, duration: 1.8, ease: "power1.out", repeat: -1, svgOrigin: `${pulse.dataset.cx} ${pulse.dataset.cy}` });
 }
 
+/* ---------- gallery: an endless plane of frames, bent like a lens near the edges ---------- */
+
+const gal = $("[data-gallery]");
+if (gal) {
+  const plane = $("[data-gal-plane]", gal)!;
+  const tiles = $$("[data-gal-tile]", plane);
+  const COLS = Number(gal.dataset.cols), ROWS = Number(gal.dataset.rows);
+  let cell = 280, W = 0, H = 0, vw = innerWidth, vh = innerHeight;
+  const layout = () => {
+    vw = innerWidth; vh = innerHeight;
+    cell = Math.round(Math.min(340, Math.max(190, vw / 4.6)));
+    W = COLS * cell; H = ROWS * cell;
+    tiles.forEach((t) => { t.style.width = `${Math.round(cell * Number(t.dataset.w))}px`; });
+    sizes = tiles.map((t) => [t.offsetWidth, t.offsetHeight]);
+  };
+  let sizes: number[][] = [];
+  layout();
+  window.addEventListener("resize", layout);
+
+  // pan state: target (tx, ty) eased into current (x, y); a slow drift when idle
+  let x = -W / 2 + vw / 2, y = -H / 2 + vh / 2, tx = x, ty = y, lastInput = 0;
+  const wrap = (v: number, m: number) => ((v % m) + m) % m;
+  const render = () => {
+    const now = performance.now();
+    if (!reduce && now - lastInput > 2500) { tx -= 0.25; ty -= 0.12; }
+    x += (tx - x) * 0.09; y += (ty - y) * 0.09;
+    const cx = vw / 2, cy = vh / 2, rx = vw * 0.75, ry = vh * 0.75;
+    tiles.forEach((t, i) => {
+      const c = Number(t.dataset.c), r = Number(t.dataset.r);
+      const [tw, th] = sizes[i];
+      const px = wrap(c * cell + x + Number(t.dataset.jx) * cell * 0.35, W) - cell;
+      const py = wrap(r * cell + y + Number(t.dataset.jy) * cell * 0.3, H) - cell;
+      const mx = px + tw / 2, my = py + th / 2;
+      const dx = (mx - cx) / rx, dy = (my - cy) / ry;
+      const d = Math.min(1.4, Math.hypot(dx, dy));
+      const s = reduce ? 1 : 1 - 0.42 * d * d;
+      const rotY = reduce ? 0 : dx * -18, rotX = reduce ? 0 : dy * 14;
+      // pull frames slightly toward the centre so the plane reads as a curved surface
+      const pull = reduce ? 0 : 0.12 * d;
+      t.style.transform = `translate3d(${(px - (mx - cx) * pull).toFixed(1)}px, ${(py - (my - cy) * pull).toFixed(1)}px, 0) rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) scale(${s.toFixed(3)})`;
+    });
+  };
+  gsap.ticker.add(render);
+
+  // drag (mouse, pen, touch) with a little inertia
+  let dragging = false, moved = 0, sx = 0, sy = 0, vx = 0, vy = 0, lx = 0, ly = 0;
+  gal.addEventListener("pointerdown", (e) => {
+    if ((e.target as Element).closest(".gal__hud, .gal__list, dialog")) return;
+    dragging = true; moved = 0; sx = lx = e.clientX; sy = ly = e.clientY; vx = vy = 0;
+    gal.setPointerCapture(e.pointerId); gal.classList.add("is-dragging"); lastInput = performance.now();
+  });
+  gal.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const ddx = e.clientX - lx, ddy = e.clientY - ly;
+    lx = e.clientX; ly = e.clientY; vx = ddx; vy = ddy;
+    tx += ddx * 1.4; ty += ddy * 1.4; moved += Math.abs(ddx) + Math.abs(ddy);
+    lastInput = performance.now();
+  });
+  const end = (e: PointerEvent) => {
+    if (!dragging) return;
+    dragging = false; gal.classList.remove("is-dragging");
+    tx += vx * 12; ty += vy * 12; // fling
+    if (moved < 6) {
+      const tile = (document.elementsFromPoint(e.clientX, e.clientY).find((el) => (el as HTMLElement).dataset?.galTile !== undefined) as HTMLElement | undefined);
+      if (tile) openItem(Number(tile.dataset.item));
+    }
+  };
+  gal.addEventListener("pointerup", end);
+  gal.addEventListener("pointercancel", end);
+  gal.addEventListener("wheel", (e) => { e.preventDefault(); tx -= e.deltaX * 1.1; ty -= e.deltaY * 1.1; lastInput = performance.now(); }, { passive: false });
+  window.addEventListener("keydown", (e) => {
+    const k = { ArrowLeft: [1, 0], ArrowRight: [-1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[e.key];
+    if (!k || box.open || !listEl.hidden) return;
+    tx += k[0] * cell; ty += k[1] * cell; lastInput = performance.now(); e.preventDefault();
+  });
+
+  // lightbox
+  const box = $<HTMLDialogElement>("[data-gal-box]", gal)!;
+  const stage = $("[data-gal-stage]", box)!;
+  const sources = $<HTMLTemplateElement>("[data-gal-sources]", gal)!;
+  let opener: HTMLElement | null = null;
+  function openItem(i: number) {
+    const src = sources.content.querySelector<HTMLElement>(`[data-src-item="${i}"]`);
+    if (!src) return;
+    opener = document.activeElement as HTMLElement;
+    stage.replaceChildren(...[...src.childNodes].map((n) => n.cloneNode(true)));
+    $("[data-gal-cap]", box)!.textContent = src.dataset.caption ?? "";
+    $("[data-gal-place]", box)!.textContent = src.dataset.place ? `· ${src.dataset.place}` : "";
+    box.showModal();
+    if (!reduce) gsap.fromTo(box, { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.45, ease: "power3.out" });
+  }
+  $("[data-gal-close]", box)?.addEventListener("click", () => box.close());
+  box.addEventListener("click", (e) => { if (e.target === box) box.close(); });
+  box.addEventListener("close", () => opener?.focus());
+
+  // accessible list view
+  const listBtn = $<HTMLButtonElement>("[data-gal-list-btn]", gal)!;
+  const listEl = $("[data-gal-list]", gal)!;
+  listBtn.addEventListener("click", () => {
+    const open = listEl.hidden;
+    listEl.hidden = !open;
+    listBtn.setAttribute("aria-expanded", String(open));
+    listBtn.textContent = open ? "Plane view" : "List view";
+  });
+  $$<HTMLButtonElement>("[data-gal-open]", listEl).forEach((b) => b.addEventListener("click", () => openItem(Number(b.dataset.galOpen))));
+
+  // first reveal once the intro card has gone
+  if (!reduce) introDone.then(() => gsap.from(tiles, { opacity: 0, duration: 1.2, stagger: { each: 0.015, from: "center" }, ease: "power2.out" }));
+}
+
 /* ---------- nav: which section am I in ---------- */
 
 const navNum = $("[data-nav-num]");
@@ -600,14 +744,19 @@ $$<HTMLButtonElement>("[data-faq]").forEach((btn) => {
 const mm = gsap.matchMedia();
 mm.add("(prefers-reduced-motion: no-preference)", () => {
   const delay = html.classList.contains("pt-in") ? 0.5 : 0;
-  const tl = gsap.timeline({ delay, defaults: { ease: "power3.out" } });
+  const tl = gsap.timeline({ delay, paused: introPending, defaults: { ease: "power3.out" } });
+  if (introPending) introDone.then(() => tl.play());
   const media = $("[data-hero-media]");
   if (media) tl.from(media, { scale: 1.12, duration: 1.8 }, 0);
   const title = $("[data-hero-title]");
   if (title) {
     SplitText.create(title, {
       type: "lines", mask: "lines", autoSplit: true,
-      onSplit: (self) => gsap.from(self.lines, { yPercent: 105, duration: 1, stagger: 0.08, ease: "power3.out", delay: delay + 0.2 }),
+      onSplit: (self) => {
+        const t = gsap.from(self.lines, { yPercent: 105, duration: 1, stagger: 0.08, ease: "power3.out", delay: delay + 0.2, paused: introPending });
+        if (introPending) introDone.then(() => t.play());
+        return t;
+      },
     });
   }
   const fades = $$("[data-hero-fade]");

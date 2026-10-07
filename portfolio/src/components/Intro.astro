@@ -1,0 +1,39 @@
+---
+// A typewriter title card shown once per visit before a page reveals itself.
+interface Props { lines: string[]; theme?: "light" | "dark"; id: string }
+const { lines, theme = "light", id } = Astro.props;
+---
+<div class:list={["intro", `intro--${theme}`]} data-intro={id} aria-hidden="true">
+  <p class="intro__text" data-intro-text>
+    {lines.map((l) => <span class="intro__line" data-intro-line={l}></span>)}
+  </p>
+</div>
+<script is:inline define:vars={{ id }}>
+  // Decide before first paint, so the page never flashes underneath.
+  try {
+    var r = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var seen = sessionStorage.getItem("intro:" + id) === "1";
+    var viaWipe = sessionStorage.getItem("pt") === "1";
+    if (!r && !seen && !viaWipe) document.documentElement.classList.add("intro-on");
+  } catch (e) {}
+</script>
+<style>
+  .intro {
+    position: fixed; inset: 0; z-index: 80; display: none;
+    align-items: center; justify-content: center; padding: var(--gutter);
+  }
+  :global(html.intro-on) .intro { display: flex; }
+  :global(html.intro-on) body { overflow: hidden; }
+  .intro--light { background: var(--paper); color: var(--ink); }
+  .intro--dark { background: #111; color: #fff; }
+  .intro__text { margin: 0; text-align: center; display: grid; gap: 0.35rem; max-width: 34rem; }
+  .intro__line { min-height: 1.55em; }
+  .intro__line:empty { display: none; }
+  /* the red block cursor, on whichever line is being typed */
+  .intro__line.is-typing::after, .intro__line.is-last::after {
+    content: ""; display: inline-block; width: 0.55em; height: 1em; margin-left: 0.3em;
+    vertical-align: -0.12em; background: var(--red);
+  }
+  .intro__line.is-last::after { animation: intro-blink 0.9s steps(1) infinite; }
+  @keyframes intro-blink { 50% { opacity: 0; } }
+</style>

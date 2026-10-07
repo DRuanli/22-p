@@ -1,0 +1,17 @@
+---
+import Base from "../layouts/Base.astro";
+import Intro from "../components/Intro.astro";
+import GalleryPlane from "../components/GalleryPlane.astro";
+---
+<Base title="Gallery · Nguyen Le" description="Photographs, paper figures and route plates from Dang Nguyen Le's academic journey, as an endless plane to wander." smooth={false} rulers={false}>
+  <Intro id="gallery" theme="dark" lines={["Photographs and figures from the routes,", "unsorted, the way they were collected.", "Drag to wander."]} />
+  <main id="main" class="galpage" tabindex="-1" data-dark data-section="Gallery">
+    <h1 class="visually-hidden">Gallery</h1>
+    <GalleryPlane />
+  </main>
+</Base>
+
+<style>
+  /* the plane is fixed; the page still needs a full-height dark section for the nav to read it */
+  .galpage { min-height: 100vh; background: #111; }
+</style>
