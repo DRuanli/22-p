@@ -6,7 +6,7 @@ const href = (id: string) => `${base}routes/${id}/`;
 ---
 <section class="routes" id="routes" aria-labelledby="routes-h" data-routes data-section="Routes">
   <div class="grid routes__head">
-    <h2 id="routes-h" class="c-head" data-reveal>Routes<br />which don't exist<br />in textbooks</h2>
+    <h2 id="routes-h" class="c-head" data-reveal>Five routes,<br />one notebook</h2>
   </div>
 
   <div class="routes__body">
@@ -26,7 +26,8 @@ const href = (id: string) => `${base}routes/${id}/`;
       <div class="routes__frame c-center crop" aria-hidden="true">
         <a class="btn btn--tight routes__discover" href={href(routes[0].id)} data-route-cta data-transition tabindex="-1">Discover</a>
       </div>
-      <p class="routes__text c-right justify" data-route-text aria-live="polite">{routes[0].teaser}</p>
+      <p class="routes__text c-right justify" data-route-text aria-hidden="true">{routes[0].teaser}</p>
+      <p class="visually-hidden" aria-live="polite" data-route-live></p>
     </div>
 
     <!-- scrolling plates -->

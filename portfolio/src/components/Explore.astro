@@ -8,7 +8,7 @@ const list = routes.filter((r) => r.id !== exclude);
 ---
 <section class="section explore" aria-labelledby="explore-h" data-section="Explore">
   <div class="grid">
-    <h2 id="explore-h" class="c-head" data-reveal>Continue<br />exploring</h2>
+    <h2 id="explore-h" class="c-head" data-reveal>More<br />routes</h2>
   </div>
   <div class="explore__viewport" data-explore>
     <ul class="explore__track">
@@ -48,6 +48,7 @@ const list = routes.filter((r) => r.id !== exclude);
   .explore__nav button::before { content: "‹  "; }
   .explore__nav button:last-child::before { content: none; }
   .explore__nav button:last-child::after { content: "  ›"; }
-  .explore__nav button:hover { color: var(--red); }
+  .explore__nav button:hover:not(:disabled) { color: var(--red); }
+  .explore__nav button:disabled { color: var(--grey-2); cursor: default; }
   @media (max-width: 860px) { .explore__card { flex-basis: 80%; } }
 </style>

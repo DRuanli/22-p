@@ -16,6 +16,11 @@ const SCRAMBLE_CHARS = "0123456789<>/\\[]{}#$%&*+=-^!?_";
 
 /* ---------- smooth scroll ---------- */
 
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+const navType = (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined)?.type;
+const scrollKey = `scroll:${location.pathname}`;
+window.addEventListener("pagehide", () => { try { sessionStorage.setItem(scrollKey, String(window.scrollY)); } catch {} });
+
 const lenis = reduce ? null : new Lenis({ lerp: 0.1, anchors: { offset: -80 } });
 if (lenis) {
   lenis.on("scroll", ScrollTrigger.update);
@@ -40,12 +45,16 @@ window.addEventListener("pageshow", (e) => {
   if (e.persisted && panel) gsap.set(panel, { xPercent: 100 });
 });
 if (panel && !reduce) {
+  let leaving = false;
+  window.addEventListener("pageshow", () => { leaving = false; });
   document.addEventListener("click", (e) => {
     const a = (e.target as Element).closest<HTMLAnchorElement>("a[data-transition]");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
     const url = new URL(a.href, location.href);
     if (url.origin !== location.origin || url.pathname === location.pathname) return;
     e.preventDefault();
+    if (leaving) return;
+    leaving = true;
     try { sessionStorage.setItem("pt", "1"); } catch {}
     gsap.fromTo(panel, { xPercent: 100 }, {
       xPercent: 0, duration: 0.7, ease: "power3.inOut",
@@ -68,6 +77,7 @@ function measure() {
 function paintScroll(y: number) {
   const cta = y > innerHeight * 0.85;
   if (cta !== ctaOn) { ctaOn = cta; nav?.classList.toggle("is-cta", cta); }
+  if (rulerH === 0) return; // rulers are hidden on small screens
   const p = Math.min(1, Math.max(0, y / maxScroll));
   if (Math.abs(p - lastP) < 0.0004) return;
   lastP = p;
@@ -95,43 +105,45 @@ else {
 paintScroll(window.scrollY);
 
 // nav text turns white while a dark section sits under it
-$$("[data-dark]").forEach((sec) => {
-  ScrollTrigger.create({
-    trigger: sec, start: "top top+=40", end: "bottom top+=40",
-    onToggle: (self) => nav?.classList.toggle("is-dark", self.isActive),
-  });
-});
+// (ScrollTrigger skips callbacks during a refresh, e.g. after reload/back, so also sync on refresh)
+// (declared first: a trigger that is already active calls onToggle while it is being created)
+const darkSTs: ScrollTrigger[] = [];
+function syncDark() { nav?.classList.toggle("is-dark", darkSTs.some((t) => t.isActive)); }
+$$("[data-dark]").forEach((sec) => darkSTs.push(ScrollTrigger.create({
+  trigger: sec, start: "top top+=40", end: "bottom top+=40",
+  onToggle: () => syncDark(),
+})));
+ScrollTrigger.addEventListener("refresh", syncDark);
+syncDark();
 
 /* ---------- scramble text ---------- */
 
-function scramble(el: HTMLElement, text: string, duration = 1.1) {
+function scramble(el: HTMLElement, text: string, duration = 1.1, lock = true) {
   if (reduce) { el.textContent = text; return; }
   gsap.killTweensOf(el);
+  // scrambled characters replace spaces too, so lock the box: no reflow of the page below
+  if (lock && !el.classList.contains("is-scrambling")) el.style.height = `${el.offsetHeight}px`;
   el.classList.add("is-scrambling");
   gsap.to(el, {
     duration,
     scrambleText: { text, chars: SCRAMBLE_CHARS, speed: 0.6, revealDelay: duration * 0.35 },
     ease: "none",
-    onComplete: () => el.classList.remove("is-scrambling"),
+    onComplete: () => { el.classList.remove("is-scrambling"); if (lock) el.style.height = ""; },
   });
 }
 function scrambleOnView(el: HTMLElement) {
   const text = el.textContent?.replace(/\s+/g, " ").trim() ?? "";
   // keep layout stable: lock height while scrambling
   ScrollTrigger.create({
-    trigger: el, start: "top 88%", once: true,
-    onEnter: () => {
-      el.style.minHeight = `${el.offsetHeight}px`;
-      scramble(el, text, 1.2);
-    },
+    trigger: el, start: "top bottom", once: true,
+    onEnter: () => scramble(el, text, 0.9),
   });
 }
 if (!reduce) {
   $$("[data-scramble]").forEach(scrambleOnView);
   $$("[data-scramble-in]").forEach((el) => {
     const text = el.textContent?.replace(/\s+/g, " ").trim() ?? "";
-    el.style.minHeight = `${el.offsetHeight}px`;
-    gsap.delayedCall(0.6, () => scramble(el, text, 1.6));
+    gsap.delayedCall(0.6, () => scramble(el, text, 1.4));
   });
 }
 
@@ -140,7 +152,7 @@ if (!reduce) {
    them (transform + opacity), so the browser never repaints the hero while it moves. */
 
 function drawHalftone(canvas: HTMLCanvasElement, time: number) {
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.5); // dots stay crisp; half the pixels of 2x
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.25); // dots stay crisp; ~40% of the pixels of 2x
   const w = canvas.clientWidth, h = canvas.clientHeight;
   canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
   const ctx = canvas.getContext("2d")!;
@@ -226,10 +238,9 @@ if (portrait) {
   };
   const start = () => {
     readLum();
-    if (reduce) { paint(1); return; }
-    const o = { k: 0 };
-    paint(0);
-    gsap.to(o, { k: 1, duration: 1.6, ease: "power2.out", onUpdate: () => paint(o.k), scrollTrigger: { trigger: portrait, start: "top 85%", once: true } });
+    paint(1);
+    if (reduce) return;
+    gsap.from(portrait, { opacity: 0, scale: 0.9, duration: 1.2, ease: "power3.out", scrollTrigger: { trigger: portrait, start: "top 85%", once: true } });
   };
   const src = portrait.dataset.src;
   if (src) {
@@ -265,6 +276,8 @@ if (routesRoot) {
   const text = $("[data-route-text]", routesRoot);
   const cta = $<HTMLAnchorElement>("[data-route-cta]", routesRoot);
   const teasers = items.map((it) => $(".routes__mobile .justify", it)?.textContent?.trim() ?? "");
+  const live = $("[data-route-live]", routesRoot);
+  const pin = $("[data-routes-pin]", routesRoot);
   let active = -1;
   const setActive = (i: number) => {
     if (i === active) return;
@@ -272,20 +285,32 @@ if (routesRoot) {
     items.forEach((it, j) => it.classList.toggle("is-active", j === i));
     links.forEach((a, j) => a.classList.toggle("is-active", j === i));
     if (cta && links[i]) cta.href = links[i].href;
-    if (text && teasers[i]) scramble(text, teasers[i], 0.9);
+    if (live) live.textContent = teasers[i];
+    if (!text || !teasers[i]) return;
+    if (pin && pin.offsetParent === null) text.textContent = teasers[i]; // pinned layer hidden (mobile)
+    else scramble(text, teasers[i], 0.9, false);
   };
   const bars = $$("[data-route-bar]", routesRoot);
+  const sts: ScrollTrigger[] = [];
   items.forEach((it, i) => {
     const bar = bars[i];
     const setBar = bar ? gsap.quickSetter(bar, "scaleX") : null;
-    ScrollTrigger.create({
+    sts.push(ScrollTrigger.create({
       trigger: it, start: "top center", end: "bottom+=36 center",
       onToggle: (self) => self.isActive && setActive(i),
       onUpdate: (self) => setBar?.(self.progress), // red bar under the active name fills as its plate passes
-    });
+      onRefresh: (self) => setBar?.(self.progress),
+    }));
   });
-  setActive(0);
-  // clicking a list item on the home page: travel to its plate first, then the link works as usual
+  // after a refresh (reload, back, resize) pick whichever plate is under the frame now
+  const syncRoute = () => {
+    const i = sts.findIndex((t) => t.isActive);
+    if (i >= 0) setActive(i);
+    else if (sts.length && window.scrollY > sts[sts.length - 1].end) setActive(sts.length - 1);
+    else setActive(0);
+  };
+  ScrollTrigger.addEventListener("refresh", syncRoute);
+  syncRoute();
 }
 
 /* ---------- itinerary rows: the row in the middle of the screen is active ---------- */
@@ -313,8 +338,36 @@ $$("[data-itin]").forEach((list) => {
 const exploreRoot = $("[data-explore]");
 if (exploreRoot) {
   const embla = EmblaCarousel(exploreRoot, { align: "start", containScroll: "trimSnaps", dragFree: true });
-  $("[data-explore-prev]")?.addEventListener("click", () => embla.scrollPrev());
-  $("[data-explore-next]")?.addEventListener("click", () => embla.scrollNext());
+  const prev = $<HTMLButtonElement>("[data-explore-prev]");
+  const next = $<HTMLButtonElement>("[data-explore-next]");
+  prev?.addEventListener("click", () => embla.scrollPrev());
+  next?.addEventListener("click", () => embla.scrollNext());
+  const sync = () => {
+    if (prev) prev.disabled = !embla.canScrollPrev();
+    if (next) next.disabled = !embla.canScrollNext();
+  };
+  embla.on("select", sync).on("reInit", sync).on("scroll", sync);
+  sync();
+}
+
+/* ---------- mobile menu ---------- */
+
+const menuBtn = $<HTMLButtonElement>("[data-menu-btn]");
+const menu = $("[data-menu]");
+if (menuBtn && menu && nav) {
+  const setMenu = (open: boolean) => {
+    menuBtn.setAttribute("aria-expanded", String(open));
+    menuBtn.textContent = open ? "Close" : "Menu";
+    menu.hidden = !open;
+    nav.classList.toggle("is-menu", open);
+    if (open) {
+      lenis?.stop();
+      if (!reduce) gsap.fromTo(menu.querySelectorAll("nav a, .nav__menu-mail"), { yPercent: 60, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.6, stagger: 0.05, ease: "power3.out" });
+    } else lenis?.start();
+  };
+  menuBtn.addEventListener("click", () => setMenu(menuBtn.getAttribute("aria-expanded") !== "true"));
+  $$("[data-menu-link]", menu).forEach((a) => a.addEventListener("click", () => setMenu(false)));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !menu.hidden) { setMenu(false); menuBtn.focus(); } });
 }
 
 /* ---------- publications: expandable entries, copy citation, pointer preview ---------- */
@@ -327,6 +380,7 @@ if (pubs) {
     const panel = $("[data-pub-panel]", item)!;
     btn.addEventListener("click", () => {
       const open = btn.getAttribute("aria-expanded") !== "true";
+      if (open) pubs.dispatchEvent(new CustomEvent("pub:open"));
       btn.setAttribute("aria-expanded", String(open));
       item.classList.toggle("is-open", open);
       if (reduce) { panel.hidden = !open; ScrollTrigger.refresh(); return; }
@@ -334,8 +388,11 @@ if (pubs) {
       if (open) {
         panel.hidden = false;
         gsap.fromTo(panel, { height: 0 }, { height: "auto", duration: 0.6, ease: "power3.out", onComplete: () => ScrollTrigger.refresh() });
-        gsap.from(panel.querySelectorAll("dl > div, .pubs__cite > *"), { opacity: 0, y: 10, duration: 0.45, stagger: 0.04, delay: 0.1, ease: "power2.out" });
+        const kids = panel.querySelectorAll("dl > div, .pubs__cite > *");
+        gsap.killTweensOf(kids);
+        gsap.fromTo(kids, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.04, delay: 0.1, ease: "power2.out" });
       } else {
+        gsap.set(panel.querySelectorAll("dl > div, .pubs__cite > *"), { opacity: 1, y: 0 });
         gsap.to(panel, { height: 0, duration: 0.45, ease: "power2.inOut", onComplete: () => { panel.hidden = true; gsap.set(panel, { clearProps: "height" }); ScrollTrigger.refresh(); } });
       }
     });
@@ -369,16 +426,18 @@ if (pubs) {
       shown = on;
       gsap.to(preview, { opacity: on ? 1 : 0, scale: on ? 1 : 0.92, duration: 0.35, ease: "power2.out" });
     };
-    gsap.set(preview, { scale: 0.92, xPercent: -50, yPercent: -110 });
+    gsap.set(preview, { scale: 0.92, xPercent: 12, yPercent: -50 });
     items.forEach((item) => {
       const row = $("[data-pub-toggle]", item)!;
       row.addEventListener("pointerenter", () => {
+        if (item.classList.contains("is-open")) return;
         plates.forEach((pl) => pl.classList.toggle("is-on", pl.dataset.preview === item.dataset.plate));
         show(true);
       });
       row.addEventListener("pointerleave", () => show(false));
     });
     pubs.addEventListener("pointermove", (e) => { xTo(e.clientX); yTo(e.clientY); });
+    pubs.addEventListener("pub:open", () => show(false));
   }
 }
 
@@ -389,23 +448,24 @@ const navName = $("[data-nav-name]");
 if (navNum && navName) {
   const sections = $$("[data-section]");
   let current = -1;
-  sections.forEach((sec, i) => {
-    ScrollTrigger.create({
-      trigger: sec, start: "top 50%", end: "bottom 50%",
-      onToggle: (self) => {
-        if (!self.isActive || i === current) return;
-        current = i;
-        navNum.textContent = String(i + 1).padStart(2, "0");
-        scramble(navName, sec.dataset.section ?? "", 0.5);
-      },
-    });
-  });
+  const show = (i: number) => {
+    if (i < 0 || i === current) return;
+    current = i;
+    navNum.textContent = String(i + 1).padStart(2, "0");
+    scramble(navName, sections[i].dataset.section ?? "", 0.5, false);
+  };
+  const secSTs: ScrollTrigger[] = [];
+  sections.forEach((sec, i) => secSTs.push(ScrollTrigger.create({
+    trigger: sec, start: "top 50%", end: "bottom 50%",
+    onToggle: (self) => self.isActive && show(i),
+  })));
+  ScrollTrigger.addEventListener("refresh", () => show(secSTs.findIndex((t) => t.isActive)));
 }
 
 /* ---------- small touches: hover scramble on bracket links, back to top ---------- */
 
 if (!reduce && window.matchMedia("(hover: hover)").matches) {
-  $$(".bracket, .routes__list a > span:first-child").forEach((el) => {
+  $$("a.bracket, .routes__list a > span:first-child").forEach((el) => {
     if (el.children.length) return; // only plain-text labels
     const label = el.textContent ?? "";
     let busy = false;
@@ -451,7 +511,7 @@ mm.add("(prefers-reduced-motion: no-preference)", () => {
   if (title) {
     SplitText.create(title, {
       type: "lines", mask: "lines", autoSplit: true,
-      onSplit: (self) => tl.from(self.lines, { yPercent: 105, duration: 1, stagger: 0.08 }, 0.2),
+      onSplit: (self) => gsap.from(self.lines, { yPercent: 105, duration: 1, stagger: 0.08, ease: "power3.out", delay: delay + 0.2 }),
     });
   }
   const fades = $$("[data-hero-fade]");
@@ -477,4 +537,14 @@ mm.add("(prefers-reduced-motion: no-preference)", () => {
 });
 
 document.fonts.ready.then(() => ScrollTrigger.refresh());
-window.addEventListener("load", () => ScrollTrigger.refresh());
+window.addEventListener("load", () => {
+  ScrollTrigger.refresh();
+  // reload / back: return to where the reader was, once layout has settled
+  let saved = 0;
+  try { saved = Number(sessionStorage.getItem(scrollKey) ?? 0); } catch {}
+  if ((navType === "reload" || navType === "back_forward") && saved > 0 && !location.hash) {
+    if (lenis) lenis.scrollTo(saved, { immediate: true, force: true });
+    else window.scrollTo(0, saved);
+    ScrollTrigger.update();
+  }
+});

@@ -9,8 +9,8 @@ import "../styles/global.css";
 import Nav from "../components/Nav.astro";
 import Rulers from "../components/Rulers.astro";
 import Transition from "../components/Transition.astro";
-interface Props { title: string; description: string; jsonLd?: object }
-const { title, description, jsonLd } = Astro.props;
+interface Props { title: string; description: string; jsonLd?: object; noindex?: boolean }
+const { title, description, jsonLd, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL(`${import.meta.env.BASE_URL}og.png`, Astro.site);
 ---
@@ -21,7 +21,7 @@ const ogImage = new URL(`${import.meta.env.BASE_URL}og.png`, Astro.site);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={title} />

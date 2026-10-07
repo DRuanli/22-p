@@ -18,7 +18,7 @@ const heading = route.months
 <Base title={`${route.name}: ${route.title} · Nguyen Le`} description={route.overview}>
   <main id="main" tabindex="-1">
     <section class="dhero" data-dark data-section="Route" aria-labelledby="dhero-h">
-      <div class="dhero__media" data-hero-media><Plate kind={route.plate} id={route.id} eager /></div>
+      <div class="dhero__media" data-hero-media><Plate kind={route.plate} id={route.id} eager quiet /></div>
       <div class="dhero__inner grid">
         <h1 id="dhero-h" class="dhero__title" data-hero-title>{route.name}</h1>
         <p class="dhero__sub" data-hero-fade>{route.title}</p>
@@ -37,7 +37,7 @@ const heading = route.months
   .dhero { position: relative; height: 88svh; min-height: 30rem; overflow: hidden; color: #fff; }
   .dhero__media { position: absolute; inset: 0; will-change: transform; }
   .dhero__media :global(.plate) { height: 100%; }
-  .dhero__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,16,12,0.5), rgba(20,16,12,0) 45%); }
+  .dhero__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,16,12,0.72), rgba(20,16,12,0.45) 40%, rgba(20,16,12,0.1) 70%); }
   .dhero__inner { position: relative; z-index: 1; padding-top: 7.5rem; align-content: start; }
   .dhero__title { grid-column: 1 / span 9; font-size: var(--fs-h1); }
   .dhero__sub { grid-column: 1 / span 6; margin-top: 1.25rem; font: 800 clamp(1.3rem, 0.8rem + 1.8vw, 2.4rem)/1 var(--display); max-width: 18ch; }

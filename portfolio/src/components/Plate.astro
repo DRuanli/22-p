@@ -4,8 +4,9 @@
 import { existsSync } from "node:fs";
 import type { PlateKind } from "../data/site";
 
-interface Props { kind: PlateKind; id?: string; alt?: string; class?: string; eager?: boolean }
-const { kind, id, alt = "", class: cls, eager = false } = Astro.props;
+interface Props { kind: PlateKind; id?: string; alt?: string; class?: string; eager?: boolean; quiet?: boolean }
+// quiet: no lettering in the plate (used behind page titles)
+const { kind, id, alt = "", class: cls, eager = false, quiet = false } = Astro.props;
 const photo = id && existsSync(`public/media/${id}.jpg`) ? `${import.meta.env.BASE_URL}media/${id}.jpg` : null;
 const uid = `p${Math.random().toString(36).slice(2, 8)}`;
 
@@ -108,8 +109,8 @@ const ridge = "M0 214 L40 196 L70 204 L110 170 L150 188 L190 150 L230 176 L270 1
         <g>
           <rect width="400" height="320" fill="#cdb895" />
           <rect x="70" y="34" width="260" height="96" fill="#2f2a22" />
-          <text x="200" y="76" text-anchor="middle" font-family="Archivo, Arial" font-weight="800" font-size="26" fill="#e7dcc6">FLYERS · PET</text>
-          <text x="200" y="110" text-anchor="middle" font-family="Archivo, Arial" font-weight="800" font-size="26" fill="#e7dcc6">IELTS</text>
+          {!quiet && <text x="200" y="76" text-anchor="middle" font-family="Archivo, Arial" font-weight="800" font-size="26" fill="#e7dcc6">FLYERS · PET</text>}
+          {!quiet && <text x="200" y="110" text-anchor="middle" font-family="Archivo, Arial" font-weight="800" font-size="26" fill="#e7dcc6">IELTS</text>}
           {[0, 1, 2, 3].map((r) => {
             const y = 170 + r * 36, w = 46 + r * 12, n = 4 + (r > 1 ? 1 : 0);
             return Array.from({ length: n }, (_, c) => (
