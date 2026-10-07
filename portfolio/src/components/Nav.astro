@@ -34,6 +34,12 @@ const base = import.meta.env.BASE_URL;
     pointer-events: none;
   }
   .nav > * { pointer-events: auto; }
+  .nav::before {
+    content: ""; position: absolute; inset: 0 0 -1.5rem 0; z-index: -1; pointer-events: none;
+    background: linear-gradient(180deg, var(--paper) 55%, rgba(255, 255, 255, 0));
+    opacity: 0; transition: opacity 0.35s;
+  }
+  .nav:not(.is-dark):not(.is-menu)::before { opacity: 1; }
   /* colour flips over dark sections (set from motion.ts) instead of a costly blend mode */
   .nav__logo, .nav__links, .nav__menu-btn { color: var(--ink); transition: color 0.35s, opacity 0.3s; }
   .nav.is-dark .nav__logo, .nav.is-dark .nav__links { color: #fff; }

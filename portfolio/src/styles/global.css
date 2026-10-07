@@ -121,3 +121,6 @@ main:focus { outline: none; }
   .ruled > *:not(:first-child)::before { left: -1px; width: 14px; border-left: 1.5px solid var(--red); background: none; }
   .ruled > *:last-child::after { display: none; }
 }
+
+/* keeps mathematical symbols in their own case inside uppercase text */
+.nc { text-transform: none; }

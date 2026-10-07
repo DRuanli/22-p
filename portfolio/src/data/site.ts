@@ -10,7 +10,7 @@ export const person = {
   orcidId: "0009-0009-5517-9996",
 };
 
-export type PlateKind = "lattice" | "utility" | "cohort" | "danube" | "classroom";
+export type PlateKind = "lattice" | "utility" | "cohort" | "danube";
 
 export type Route = {
   id: string;
@@ -35,9 +35,9 @@ export const routes: Route[] = [
     months: 18,
     plate: "lattice",
     teaser:
-      "My first research route. It started in the course Design and Analysis of Algorithms and ended as TUFCI, a best-first search algorithm for the top-k closed frequent itemsets in uncertain data, published in PLOS ONE.",
+      "My first research route. Depth-first miners meet strong patterns late, so their pruning threshold rises slowly. TUFCI explores candidates in descending probabilistic support instead: it finds strong patterns first, stops early, and needs about 60% fewer closure checks on Chess. Published in PLOS ONE.",
     overview:
-      "When every item in a database appears only with some probability, which itemsets are frequent, closed, and among the k best? TUFCI answers it with a best-first search that expands the most promising candidates first.",
+      "In an uncertain database every item appears only with some probability, and computing an itemset's probabilistic support costs a quadratic convolution. Most top-k closed miners walk the search space depth-first, in item order, so high-support patterns surface late and the pruning threshold rises slowly. TUFCI replaces the stack with a priority queue ordered by probabilistic support: strong patterns arrive first, the threshold climbs fast, search can terminate safely, and closure checks start with the supersets most likely to fail.",
     stats: [
       { label: "Duration", value: "18 months" },
       { label: "Period", value: "09/2024 – 02/2026" },
@@ -45,10 +45,12 @@ export const routes: Route[] = [
       { label: "Outcome", value: "PLOS ONE, Q1" },
     ],
     steps: [
-      { when: "09/2024", where: "Ton Duc Thang University", title: "Departure", body: "The project starts inside the course Design and Analysis of Algorithms, graded 10.0." },
-      { when: "2024 – 2025", where: "Uncertain databases", title: "The problem", body: "Top-k closed frequent itemsets when every item only appears with some probability." },
-      { when: "– 02/2026", where: "Best-first search", title: "The algorithm", body: "TUFCI expands the most promising candidate itemsets before the rest." },
-      { when: "17/06/2026", where: "PLOS ONE 21(6)", title: "Arrival", body: "Published as e0351951. Le, N., Vo, H., & Nguyen, T." },
+      { when: "09/2024", where: "Design and Analysis of Algorithms", title: "Departure", body: "The project starts inside the course (grade 10.0), with one question: does search order matter when support is expensive?" },
+      { when: "Problem", where: "Uncertain databases", title: "Late strong patterns", body: "Depth-first search explores in enumeration order, so high-support patterns are found late, pruning stays weak and closure checks pile up." },
+      { when: "Idea", where: "Priority queue", title: "Best-first search", body: "Candidates are expanded in descending probabilistic support, so the top-k threshold rises quickly and search can stop early." },
+      { when: "Proof", where: "Seven pruning strategies", title: "Safe pruning", body: "P1–P7, in four groups, are proven never to remove a true top-k closed frequent itemset, including safe early termination." },
+      { when: "Tests", where: "Chess · Mushroom · Retail · Liquor", title: "Dense and sparse data", body: "Against TopKPFIM and ITUFP, plus ablations that separate search order from pruning; differences significant at p < 0.01." },
+      { when: "17/06/2026", where: "PLOS ONE 21(6)", title: "Arrival", body: "Published as e0351951. Le, N., Vo, H., & Nguyen, T. Code and data on GitHub." },
     ],
     cta: { label: "Read in PLOS ONE", href: "https://doi.org/10.1371/journal.pone.0351951" },
   },
@@ -60,9 +62,9 @@ export const routes: Route[] = [
     months: 13,
     plate: "utility",
     teaser:
-      "My thesis route: finding the k most profitable item combinations in uncertain transaction data where items can bring profit or loss. A counterexample, two correct bounds, an exact algorithm and the first heuristic for the problem.",
+      "My thesis route: the k most profitable item combinations in uncertain data where items can bring profit or loss. A counterexample shows the classical bound fails here; two new bounds make an exact algorithm correct, and UTKU-PSO is the first heuristic for the problem.",
     overview:
-      "The standard pruning bound gives wrong results once items can bring a loss. I showed this by counterexample, derived two bounds that stay correct, and built PTK-HUIM, an exact algorithm with three provably equivalent search orders, together with UTKU-PSO, the first heuristic for the problem.",
+      "Top-k high-utility mining finds the k most profitable itemsets without a hand-tuned threshold, but existing algorithms assume certain data and positive profits. Real data has neither: sensor readings are noisy, and promotions or loss leaders carry negative profit. I showed by counterexample that the classical transaction-weighted utility bound is unsafe in this setting even after probability weighting, derived two bounds that are safe (PTWU and PUB), and built an exact algorithm and a heuristic on top of them.",
     stats: [
       { label: "Duration", value: "13 months" },
       { label: "Period", value: "06/2025 – 06/2026" },
@@ -70,11 +72,12 @@ export const routes: Route[] = [
       { label: "Outcome", value: "JKSU – CIS, Q1, in press" },
     ],
     steps: [
-      { when: "06/2025", where: "Undergraduate thesis", title: "Departure", body: "Advisor Dr. Chi-Thien Nguyen. Mixed utilities: items can bring profit or loss." },
-      { when: "Step 01", where: "A counterexample", title: "The broken bound", body: "The standard pruning bound gives wrong results once negative utilities are allowed." },
-      { when: "Step 02", where: "Two upper bounds", title: "Correct pruning", body: "Two bounds that stay correct with mixed utilities." },
-      { when: "Step 03", where: "PTK-HUIM", title: "Exact algorithm", body: "Three search orders, provably equivalent." },
-      { when: "Step 04", where: "UTKU-PSO", title: "First heuristic", body: "The first heuristic approach for this problem." },
+      { when: "06/2025", where: "Undergraduate thesis", title: "Departure", body: "Advisor Dr. Chi-Thien Nguyen. No algorithm covered top-k utility mining on uncertain data with both positive and negative profits." },
+      { when: "Step 01", where: "A counterexample", title: "The broken bound", body: "The classical transaction-weighted utility bound can prune true answers once negative utilities appear, even with probabilities applied." },
+      { when: "Step 02", where: "PTWU · PUB", title: "Two safe bounds", body: "Positive Transaction-Weighted Utility and Positive Upper Bound: required for correctness, not just speed." },
+      { when: "Step 03", where: "UPU-List", title: "PTK-HUIM, exact", body: "Prefix growth on a Utility-Probability-Utility List; depth-first, breadth-first and best-first orders proven to return the same top-k." },
+      { when: "Step 04", where: "UTKU-PSO", title: "First heuristic", body: "Particle swarm with probability-aware fitness, PTWU-based bit clearing and a shifted roulette wheel for negative utilities." },
+      { when: "Step 05", where: "Six benchmarks", title: "Honest trade-offs", body: "Chess, Mushroom, Accidents, Pumsb, Retail, Kosarak, and three further probability models, one breaking independence." },
       { when: "08/2026", where: "JKSU – CIS", title: "Arrival", body: "Thesis graded 9.1/10; the article was accepted in August 2026." },
     ],
     cta: { label: "Ask about this work", href: "mailto:elio.ruanli@gmail.com?subject=PTK-HUIM" },
@@ -87,20 +90,21 @@ export const routes: Route[] = [
     months: 10,
     plate: "cohort",
     teaser:
-      "A route through a real school. With 675 students' anonymised Mathematics records, I showed that common early-warning models use behaviour data the school does not have yet when it must predict, and built IC-FS, which only uses what is available.",
+      "A route through real school data. Early-warning models often rely on student behaviour that does not exist yet when they must predict. In a course-start test, five standard selectors chose ten features each and not one was available; IC-FS certifies that cannot happen. Published in Expert Systems with Applications.",
     overview:
-      "Early-warning systems report impressive results, but many of them select student-behaviour features the school does not have at the moment it must predict. IC-FS restricts feature selection to data available at prediction time, with an automatic no-leakage check.",
+      "An early-warning system is only useful if it can act when the course begins. Yet feature selectors routinely pick engagement signals, like clicks in the learning platform, that do not exist yet at that moment. The paper names this Behavioural Leakage and its extreme case, the Illusion of Actionability, gives a machine-checkable no-leakage certificate, an evaluation that retrains on horizon-available features only, and IC-FS, a selector that satisfies the certificate by construction.",
     stats: [
       { label: "Duration", value: "10 months" },
       { label: "Period", value: "08/2025 – 05/2026" },
-      { label: "Cohort", value: "675 students" },
+      { label: "Data", value: "OULAD · UCI · 675-student cohort" },
       { label: "Outcome", value: "ESWA, Q1" },
     ],
     steps: [
-      { when: "08/2025", where: "Lower-secondary school", title: "Departure", body: "With M.Sc. Huu-Phuoc Duong and a lower-secondary school in southern Vietnam." },
-      { when: "Step 01", where: "675 students", title: "The data", body: "An anonymised Mathematics cohort, with written confirmation of data provision." },
-      { when: "Step 02", where: "Behavioural leakage", title: "The illusion", body: "Common models pick features not yet known at prediction time, so reported results overstate what can be used for intervention." },
-      { when: "Step 03", where: "IC-FS", title: "The fix", body: "Feature selection restricted to data available at prediction time. The no-leakage check held in every cross-validation fold." },
+      { when: "08/2025", where: "Lower-secondary school", title: "Departure", body: "With M.Sc. Huu-Phuoc Duong and a lower-secondary school in southern Vietnam that provided an anonymised cohort." },
+      { when: "Step 01", where: "Two failure modes", title: "Naming the leak", body: "Behavioural Leakage: actionable behaviour not observable at the horizon. Illusion of Actionability: its limit, τ = 1." },
+      { when: "Step 02", where: "BL(S, h)", title: "A certificate", body: "A binary no-leakage check for any selection, kept separate from the intervention-utility score IUS_deploy." },
+      { when: "Step 03", where: "Two protocols", title: "Deployment-honest", body: "Retrain on horizon-available features for the estimate; audit an already-deployed model under missing late features (DRE)." },
+      { when: "Step 04", where: "OULAD · UCI · Vietnam", title: "Evidence", body: "Group-aware 5-fold CV with bootstrap intervals, a fairness audit across sensitive attributes, and a 675-student case study." },
       { when: "06/09/2026", where: "Expert Systems with Applications", title: "Arrival", body: "Published online, volume 333, article 134262. Le, N., Lam, T., & Duong, H.-P." },
     ],
     cta: { label: "Read in ESWA", href: "https://doi.org/10.1016/j.eswa.2026.134262" },
@@ -113,9 +117,9 @@ export const routes: Route[] = [
     months: 6,
     plate: "danube",
     teaser:
-      "From the Mekong to the Danube. An exchange semester at OTH Regensburg in Germany, funded by a merit-based TL-Stiftung scholarship. German began here, and my English classes in Vietnam kept going online.",
+      "From the Mekong to the Danube. An exchange semester at OTH Regensburg in Germany, funded by a merit-based TL-Stiftung scholarship. German began here; the first research project began right after.",
     overview:
-      "An exchange semester at Ostbayerische Technische Hochschule Regensburg, funded by a merit-based TL-Stiftung scholarship. My English classes continued online the whole time. Solo trips have taken me to Germany, France, Austria and Taiwan.",
+      "An exchange semester at Ostbayerische Technische Hochschule Regensburg, funded by a merit-based TL-Stiftung scholarship. German began here, and the first research project started in the semester after my return.",
     stats: [
       { label: "Duration", value: "6 months" },
       { label: "Period", value: "03/2024 – 09/2024" },
@@ -125,43 +129,15 @@ export const routes: Route[] = [
     steps: [
       { when: "03/2024", where: "OTH Regensburg", title: "Departure", body: "Exchange semester on a merit-based TL-Stiftung scholarship." },
       { when: "2024", where: "Germany", title: "A new language", body: "German starts with the exchange; today at A2." },
-      { when: "2024", where: "Online", title: "Classes keep going", body: "English classes in Ho Chi Minh City continue online throughout the semester." },
       { when: "09/2024", where: "Ho Chi Minh City", title: "Return", body: "Back home, and straight into the first research project." },
     ],
     cta: { label: "Write to me", href: "mailto:elio.ruanli@gmail.com" },
-  },
-  {
-    id: "teaching",
-    name: "MAC English",
-    title: "Teaching English since 2023",
-    length: "Since 2023",
-    months: 0,
-    plate: "classroom",
-    teaser:
-      "A route that runs alongside all the others. Since 2023 I teach English part-time at MAC English centre in Ho Chi Minh City, from primary learners to upper-secondary students preparing for Flyers, PET and IELTS.",
-    overview:
-      "Part-time English teacher at MAC English centre in Ho Chi Minh City since 2023, for primary, lower-secondary and upper-secondary learners. Current offline classes prepare students for Flyers, PET and IELTS.",
-    stats: [
-      { label: "Since", value: "2023" },
-      { label: "Where", value: "MAC English centre" },
-      { label: "Learners", value: "Primary to upper-secondary" },
-      { label: "My English", value: "IELTS Academic 7.0" },
-    ],
-    steps: [
-      { when: "2023", where: "MAC English centre", title: "First classes", body: "Part-time teacher in Ho Chi Minh City." },
-      { when: "Level 01", where: "Flyers", title: "Young learners", body: "Cambridge Young Learners classes." },
-      { when: "Level 02", where: "PET", title: "B1 Preliminary", body: "Cambridge B1 Preliminary classes." },
-      { when: "Level 03", where: "IELTS", title: "Academic English", body: "IELTS preparation classes." },
-      { when: "2024", where: "Online, from Germany", title: "Never paused", body: "Teaching continued online throughout the exchange semester." },
-    ],
-    cta: { label: "Ask about classes", href: "mailto:elio.ruanli@gmail.com?subject=English%20classes" },
   },
 ];
 
 export const milestones = [
   { when: "2019", where: "Can Tho", title: "Upper-secondary school", body: "Nguyen Viet Hong Upper-Secondary School, until 2022. Chinese begins here." },
   { when: "09/2022", where: "Ho Chi Minh City", title: "B.Sc. Computer Science", body: "Ton Duc Thang University; Academic Merit Scholarship in several semesters." },
-  { when: "2023", where: "MAC English centre", title: "First English classes", body: "Part-time teacher for primary to upper-secondary learners." },
   { when: "03/2024", where: "Regensburg", title: "Exchange semester", body: "OTH Regensburg on a merit-based TL-Stiftung scholarship." },
   { when: "09/2024", where: "Ton Duc Thang University", title: "First research project", body: "Begins in Design and Analysis of Algorithms; becomes TUFCI." },
   { when: "08/2025", where: "FPT Information System", title: "Internship", body: "Deploying an information system for a provincial Civil Judgment Enforcement Department. Graded 9.5/10." },
@@ -184,6 +160,9 @@ export const facts = [
   { label: "2024", value: "Exchange semester, OTH Regensburg" },
 ];
 
+export type Figure = { value: string; label: string };
+export type ChartRow = { label: string; value: number; display: string; emphasis?: boolean; note?: string };
+
 export type Paper = {
   venue: string;
   year: string;
@@ -195,8 +174,15 @@ export type Paper = {
   href?: string;
   route: string; // id in routes[]
   citation: string; // APA, as on the CV
+  summary: string; // what the paper does, in plain words
+  contributions: string[];
+  figures: Figure[]; // headline numbers, all from the paper
+  chart: { title: string; caption: string; max: number; rows: ChartRow[] };
+  data: string[];
+  keywords: string[];
 };
 
+// Every number below is quoted from the published papers (see docs/content.md).
 export const papers: Paper[] = [
   {
     venue: "Expert Systems with Applications",
@@ -209,6 +195,33 @@ export const papers: Paper[] = [
     href: "https://doi.org/10.1016/j.eswa.2026.134262",
     route: "ic-fs",
     citation: "Le, N., Lam, T., & Duong, H.-P. (2026). Behavioural leakage and the illusion of actionability: a deployment-honest evaluation framework for educational early warning systems. Expert Systems with Applications, 333, 134262. https://doi.org/10.1016/j.eswa.2026.134262",
+    summary:
+      "Early warning systems are judged on retrospective accuracy, but they have to act at the start of a course. The paper formalises two deployment failure modes, Behavioural Leakage and the Illusion of Actionability, and builds an evaluation that measures what a school could actually use at the prediction horizon.",
+    contributions: [
+      "Formal definitions of Behavioural Leakage and the Illusion of Actionability, with an actionability-dilution coefficient τ whose limit τ = 1 is the Illusion.",
+      "A machine-checkable no-leakage certificate BL(S, h), deliberately separate from the intervention-utility score IUS_deploy.",
+      "A two-protocol evaluation: retrain on horizon-available features for the deployment estimate, and audit an already-deployed model under missing late features (DRE).",
+      "IC-FS, a reference selector that satisfies the certificate by construction, with a fairness audit and a single-school case study.",
+    ],
+    figures: [
+      { value: "5/5", label: "standard selectors show the strict Illusion of Actionability at course start (τ = 1)" },
+      { value: "0.484", label: "deployable fail-class F1 of IC-FS in that test; the five selectors reach 0.000" },
+      { value: "24–31%", label: "relative gain in available actionability over the strongest baseline on OULAD" },
+      { value: "675", label: "students in the Vietnamese school cohort, fail prevalence 30.7%" },
+    ],
+    chart: {
+      title: "Course-start diagnostic: deployable fail-class F1",
+      caption: "OULAD, risk-set cohort N = 24,601, k = 10 features chosen for the course-start horizon.",
+      max: 0.5,
+      rows: [
+        { label: "IC-FS", value: 0.484, display: "0.484", emphasis: true, note: "Ten deployable features, zero penalty under audit" },
+        { label: "IC-FS without temporal filter, retrained", value: 0.456, display: "0.456", note: "Only one of ten features is deployable (τ = 0.848)" },
+        { label: "Same model under the DRE audit", value: 0, display: "0.000", note: "Collapses once late features are missing" },
+        { label: "MI, RF importance, correlation, L1-LR, Boruta", value: 0, display: "0.000", note: "No selected feature exists at course start" },
+      ],
+    },
+    data: ["OULAD · 24,601–29,496 enrolments per horizon", "UCI Mathematics · 395", "UCI Portuguese · 649", "Vietnamese school · 675"],
+    keywords: ["Early warning systems", "Feature selection", "Temporal leakage", "Learning analytics"],
   },
   {
     venue: "PLOS ONE",
@@ -221,6 +234,31 @@ export const papers: Paper[] = [
     href: "https://doi.org/10.1371/journal.pone.0351951",
     route: "tufci",
     citation: "Le, N., Vo, H., & Nguyen, T. (2026). Best-first search–based approach for mining top-k closed frequent itemsets from uncertain databases. PLOS ONE, 21(6), e0351951. https://doi.org/10.1371/journal.pone.0351951",
+    summary:
+      "Computing probabilistic support is expensive, so the order in which candidates are explored decides how fast the top-k threshold rises. TUFCI explores in descending probabilistic support with a priority queue: strong patterns first, early termination, and closure checks that start with the supersets most likely to fail.",
+    contributions: [
+      "The first algorithm to combine best-first search with closure checking for top-k closed frequent itemsets over uncertain data.",
+      "A closure-verification strategy that uses support order to skip redundant superset checks.",
+      "Seven pruning strategies (P1–P7) proven never to remove a true top-k closed itemset, including safe early termination.",
+      "Experiments on dense and sparse benchmarks against TopKPFIM and ITUFP, with ablations separating search order from pruning.",
+    ],
+    figures: [
+      { value: "3.2×", label: "faster than TopKPFIM on Chess at k = 50 (2.8× faster than ITUFP)" },
+      { value: "−60%", label: "closure checks versus depth-first search with identical pruning (Chess, k = 50)" },
+      { value: "10–100×", label: "fewer candidates processed than naive depth-first search on dense data" },
+      { value: "1.5–2×", label: "speed-up kept on the sparse datasets, Retail and Liquor" },
+    ],
+    chart: {
+      title: "Closure checks on Chess, k = 50",
+      caption: "Same seven pruning strategies, only the search order differs. Mean of 5 runs; difference significant at p < 0.01.",
+      max: 25000,
+      rows: [
+        { label: "TUFCI, best-first", value: 9200, display: "9,200", emphasis: true, note: "± 340 over 5 runs" },
+        { label: "Depth-first, same pruning", value: 23800, display: "23,800", note: "± 1,120 over 5 runs" },
+      ],
+    },
+    data: ["Chess · 3,197", "Mushroom · 8,125", "Retail · 88,162", "Liquor · 52,819 transactions"],
+    keywords: ["Uncertain databases", "Closed itemsets", "Top-k mining", "Best-first search"],
   },
   {
     venue: "Journal of King Saud University – Computer and Information Sciences",
@@ -232,6 +270,31 @@ export const papers: Paper[] = [
     quartile: "Q1",
     route: "ptk-huim",
     citation: "Le, N., Vo, H., & Nguyen, T. (in press). Exact and heuristic approaches for mining top-k high-utility itemsets in uncertain databases with mixed utilities. Journal of King Saud University – Computer and Information Sciences.",
+    summary:
+      "No algorithm handled top-k utility mining on uncertain data where items can bring profit or loss. A counterexample shows the classical bound is unsafe there; two safe bounds make an exact algorithm, PTK-HUIM, correct, and UTKU-PSO is the first heuristic, with its accuracy–speed trade-off measured honestly.",
+    contributions: [
+      "A formulation of top-k high-utility itemset mining for uncertain databases with positive and negative utilities.",
+      "PTK-HUIM: exact prefix growth on the UPU-List with two-level pruning (PTWU, PUB); depth-first, breadth-first and best-first orders proven equivalent.",
+      "UTKU-PSO: probability-aware fitness, PTWU-based bit clearing and a shifted roulette wheel for negative expected utilities.",
+      "Robustness under three further probability models; one that breaks independence shifts up to 61% of the top-k set.",
+    ],
+    figures: [
+      { value: "5.9×", label: "up to this many fewer nodes for frontier-ordered strategies, which pay up to 17.9× more per node" },
+      { value: "5.6×", label: "up to this much faster: UTKU-PSO versus the exact family on large, sparse datasets" },
+      { value: "83%", label: "of total expected utility still recovered by UTKU-PSO at k = 20,000 on the sparsest data" },
+      { value: "0.998", label: "Spearman ρ between a ground-truth-free diagnostic and true accuracy" },
+    ],
+    chart: {
+      title: "UTKU-PSO at k = 20,000 on the sparsest benchmark",
+      caption: "Set accuracy falls at very large k, while most of the expected utility is still found.",
+      max: 100,
+      rows: [
+        { label: "Expected utility recovered", value: 83, display: "83%", emphasis: true, note: "Of the exact top-k total" },
+        { label: "Returned itemsets inside the exact top-k", value: 50, display: "≈ 50%", note: "Roughly half fall outside" },
+      ],
+    },
+    data: ["Chess", "Mushroom", "Accidents · 340,183", "Pumsb", "Retail", "Kosarak · 990,002 transactions"],
+    keywords: ["High-utility itemsets", "Negative utilities", "Uncertain data", "Particle swarm optimisation"],
   },
 ];
 

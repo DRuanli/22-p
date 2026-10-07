@@ -12,6 +12,7 @@ import Plate from "./Plate.astro";
     <div class="c-full crop feature__frame" data-parallax>
       <div class="feature__clip">
         <div data-parallax-inner><Plate kind="cohort" id="feature" alt="675 dots, one per student in the cohort; the last columns are marked as data not yet available at prediction time" /></div>
+        <div class="horizon" data-horizon aria-hidden="true"><span>Prediction horizon h</span></div>
       </div>
       <a class="btn btn--outline feature__btn" href="https://doi.org/10.1016/j.eswa.2026.134262" target="_blank" rel="noopener">Read in ESWA</a>
     </div>
@@ -21,7 +22,13 @@ import Plate from "./Plate.astro";
 <style>
   .feature__text { margin-top: 2rem; margin-bottom: 3rem; }
   .feature__frame { position: relative; }
-  .feature__clip { overflow: hidden; aspect-ratio: 16 / 7; }
+  .feature__clip { overflow: hidden; aspect-ratio: 16 / 7; position: relative; }
+  /* the line between data a school has at prediction time and data it does not have yet */
+  .horizon { position: absolute; top: 0; bottom: 0; left: 72.3%; width: 1.5px; background: var(--red); }
+  .horizon span {
+    position: absolute; top: 1rem; left: 0.75rem; white-space: nowrap;
+    background: var(--red); color: #fff; padding: 0.35rem 0.6rem; font-size: var(--fs-mono-s);
+  }
   .feature__clip > div { height: 116%; margin-top: -8%; will-change: transform; }
   .feature__clip :global(.plate) { height: 100%; }
   .feature__btn { position: absolute; left: 50%; bottom: 2.5rem; translate: -50% 0; color: #fff; background: rgba(0,0,0,0.15); }

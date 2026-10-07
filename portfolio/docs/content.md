@@ -6,7 +6,7 @@
 
 ## Identity
 - Name: Dang Nguyen Le (published as Nguyen Le)
-- One-line: Researcher in data mining & educational ML · English teacher · solo traveller
+- One-line: Researcher in data mining & educational ML
 - Location: Ho Chi Minh City, Vietnam
 - Languages on site: English only. TODO: Vietnamese toggle?
 
@@ -33,9 +33,13 @@
   feature) to replace the generated film plates.
 
 ## Teaching
-- English since 2023, primary to upper-secondary, MAC English centre, HCMC: PET, IELTS, Flyers.
-- Kept teaching online through the exchange semester in Germany.
-- TODO: photo/video with permission.
+- Removed from the site at the owner's request (Oct 2026): the site is academic only.
+
+## Paper details (source: the three published PDFs the owner supplied)
+- Summaries, contributions, headline numbers and charts in `src/data/site.ts` (papers[].summary,
+  contributions, figures, chart, data) are quoted from the papers themselves:
+  ESWA 333 (2027) 134262; PLOS ONE 21(6) e0351951; JKSU–CIS manuscript (in press).
+- Do not add numbers that are not in those papers.
 
 ## Words from others
 - TODO: real quotes with permission. Section hidden until then.
