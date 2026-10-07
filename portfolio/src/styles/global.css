@@ -1,0 +1,112 @@
+@import "./tokens.css";
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 5rem; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: var(--fs-mono);
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  overflow-x: clip;
+}
+p { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+
+h1, h2, h3 {
+  font-family: var(--display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.98;
+  margin: 0;
+}
+h1 { font-size: var(--fs-h1); }
+h2 { font-size: var(--fs-h2); }
+
+/* 12-column page grid; headings start on column 5 like the reference */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  padding-inline: var(--gutter);
+}
+.c-head { grid-column: 5 / span 6; }
+.c-right { grid-column: 9 / span 4; }
+.c-left { grid-column: 1 / span 3; }
+.c-center { grid-column: 5 / span 4; }
+.c-full { grid-column: 1 / -1; }
+@media (max-width: 860px) {
+  .c-head, .c-right, .c-left, .c-center { grid-column: 1 / -1; }
+}
+
+.section { padding-block: var(--section); }
+.justify { text-align: justify; hyphens: auto; }
+.muted { color: var(--grey); }
+.label { color: var(--grey); font-size: var(--fs-mono-s); }
+
+/* bracket buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.9em;
+  padding: 0.95em 1.6em;
+  background: var(--red); color: #fff;
+  font: 500 var(--fs-mono) / 1 var(--mono); letter-spacing: 0.04em; text-transform: uppercase;
+  text-decoration: none; border: 0; cursor: pointer;
+  transition: background 0.3s;
+}
+.btn::before { content: "["; }
+.btn::after { content: "]"; }
+.btn:hover { background: var(--red-dark); }
+.btn--outline { background: transparent; border: 1px solid currentColor; }
+.btn--outline:hover { background: #fff; color: var(--ink); }
+.btn--tight { gap: 0.25em; padding: 0.7em 1.1em; }
+
+.bracket { text-decoration: none; white-space: nowrap; }
+.bracket::before { content: "[ "; }
+.bracket::after { content: " ]"; }
+.bracket:hover { color: var(--red); }
+
+/* red crop marks at the four corners */
+.crop {
+  --c: var(--red); --l: 14px; --t: 1.5px; --o: 6px;
+  position: relative; padding: var(--o);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / var(--l) var(--t),
+    linear-gradient(var(--c), var(--c)) top left / var(--t) var(--l),
+    linear-gradient(var(--c), var(--c)) top right / var(--l) var(--t),
+    linear-gradient(var(--c), var(--c)) top right / var(--t) var(--l),
+    linear-gradient(var(--c), var(--c)) bottom left / var(--l) var(--t),
+    linear-gradient(var(--c), var(--c)) bottom left / var(--t) var(--l),
+    linear-gradient(var(--c), var(--c)) bottom right / var(--l) var(--t),
+    linear-gradient(var(--c), var(--c)) bottom right / var(--t) var(--l);
+  background-repeat: no-repeat;
+}
+
+/* ruled grid with red ticks where the columns meet the top rule */
+.ruled { display: grid; border-top: 1px solid var(--line); position: relative; }
+.ruled > * { position: relative; border-left: 1px solid var(--line); padding: 1.5rem 1.25rem 2rem; }
+.ruled > *:last-child { border-right: 1px solid var(--line); }
+.ruled > *::before {
+  content: ""; position: absolute; left: -1px; top: -1px; width: 14px; height: 10px;
+  border-top: 1.5px solid var(--red); border-left: 1.5px solid var(--red);
+}
+.ruled > *:not(:first-child)::before { left: -14px; width: 28px; border-left: 0; background: linear-gradient(var(--red), var(--red)) center top / 1.5px 10px no-repeat; }
+.ruled > *:last-child::after {
+  content: ""; position: absolute; right: -1px; top: -1px; width: 14px; height: 10px;
+  border-top: 1.5px solid var(--red); border-right: 1.5px solid var(--red);
+}
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: 1rem; top: -4rem; z-index: 100; background: var(--red); color: #fff; padding: 0.6rem 1rem; }
+.skip:focus { top: 1rem; }
+
+/* scramble state */
+.is-scrambling { color: var(--red); }

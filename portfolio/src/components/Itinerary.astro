@@ -1,0 +1,86 @@
+---
+// Rows like a day-by-day itinerary: when · where · title. The row nearest the
+// middle of the screen becomes active and shows its note in a red box.
+interface Props { rows: { when: string; where: string; title: string; body: string }[]; id?: string; heading: string; intro: string; cta?: { label: string; href: string } }
+const { rows, id, heading, intro, cta } = Astro.props;
+const external = cta?.href.startsWith("http");
+---
+<section class="section itin" id={id} aria-labelledby={`${id ?? "itin"}-h`}>
+  <div class="grid">
+    <h2 id={`${id ?? "itin"}-h`} class="c-head" data-reveal set:html={heading} />
+    <p class="c-right justify itin__intro" data-scramble>{intro}</p>
+  </div>
+
+  <ol class="itin__rows grid" data-itin>
+    {rows.map((r, i) => (
+      <li class:list={["itin__row", "c-full", { "is-active": i === 0 }]} data-itin-row>
+        <span class="itin__when">{r.when}</span>
+        <span class="itin__where"><span class="itin__mark">{r.where}</span></span>
+        <span class="itin__title">{r.title}</span>
+        <p class="itin__note">{r.body}</p>
+      </li>
+    ))}
+  </ol>
+
+  {cta && (
+    <div class="grid itin__cta">
+      <a class="btn" href={cta.href} target={external ? "_blank" : undefined} rel={external ? "noopener" : undefined}>{cta.label}</a>
+    </div>
+  )}
+</section>
+
+<style>
+  .itin__intro { margin-top: 2rem; }
+  .itin__rows { list-style: none; margin: 4rem 0 0; padding-block: 0; }
+  .itin__row {
+    position: relative;
+    display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: center; gap: 1rem;
+    min-height: 4.4rem; color: var(--grey);
+    transition: color 0.4s;
+  }
+  .itin__row::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--line); transform: scaleX(0); transition: transform 0.6s var(--ease); }
+  .itin__when, .itin__title { position: relative; z-index: 1; background: var(--paper); padding-block: 0.3rem; }
+  .itin__when { justify-self: start; padding-right: 1rem; }
+  .itin__title { padding-left: 1rem; }
+  .itin__where { justify-self: center; text-align: center; position: relative; z-index: 1; }
+  .itin__mark { display: inline-block; padding: 0.6rem 1.2rem; background: var(--paper); }
+  .itin__title { justify-self: end; text-align: right; }
+  .itin__note {
+    position: absolute; left: 50%; bottom: calc(50% + 1.6rem); z-index: 2;
+    width: min(20rem, 80vw); translate: -50% 0;
+    background: var(--red); color: #fff; padding: 0.85rem 1rem; text-align: justify;
+    opacity: 0; transform: translateY(8px); pointer-events: none;
+    transition: opacity 0.4s var(--ease), transform 0.5s var(--ease);
+  }
+  .itin__row.is-active { color: var(--ink); }
+  .itin__row.is-active::before { transform: scaleX(1); }
+  .itin__row.is-active .itin__mark {
+    --c: var(--red); --l: 10px; --t: 1.5px;
+    background:
+      linear-gradient(var(--c), var(--c)) top left / var(--l) var(--t),
+      linear-gradient(var(--c), var(--c)) top left / var(--t) var(--l),
+      linear-gradient(var(--c), var(--c)) top right / var(--l) var(--t),
+      linear-gradient(var(--c), var(--c)) top right / var(--t) var(--l),
+      linear-gradient(var(--c), var(--c)) bottom left / var(--l) var(--t),
+      linear-gradient(var(--c), var(--c)) bottom left / var(--t) var(--l),
+      linear-gradient(var(--c), var(--c)) bottom right / var(--l) var(--t),
+      linear-gradient(var(--c), var(--c)) bottom right / var(--t) var(--l),
+      var(--paper);
+    background-repeat: no-repeat;
+  }
+  .itin__row.is-active .itin__note { opacity: 1; transform: none; }
+  .itin__cta { margin-top: 3rem; }
+  .itin__cta .btn { grid-column: 10 / span 3; justify-self: end; }
+
+  @media (max-width: 860px) {
+    .itin__row { grid-template-columns: minmax(0, 1fr); gap: 0.2rem; padding-block: 1.1rem; border-top: 1px solid var(--line); color: var(--ink); }
+    .itin__row::before { display: none; }
+    .itin__where, .itin__title { justify-self: start; text-align: left; }
+    .itin__when, .itin__title { padding: 0; background: none; }
+    .itin__mark { padding: 0; }
+    .itin__row.is-active .itin__mark { background: none; }
+    .itin__when { color: var(--red); }
+    .itin__note { position: static; translate: none; opacity: 1; transform: none; width: auto; background: none; color: var(--grey); padding: 0.3rem 0 0; text-align: left; }
+    .itin__cta .btn { grid-column: 1 / -1; justify-self: start; }
+  }
+</style>

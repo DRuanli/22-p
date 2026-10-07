@@ -1,0 +1,29 @@
+---
+import Plate from "./Plate.astro";
+---
+<section class="section feature" aria-labelledby="feature-h">
+  <div class="grid">
+    <h2 id="feature-h" class="c-head" data-reveal>675 students,<br />one honest question</h2>
+    <p class="c-right justify feature__text" data-scramble>
+      Can a school act on an early-warning prediction with the data it actually has at
+      the time? With an anonymised Mathematics cohort of 675 students, the answer for
+      many published models was no. IC-FS keeps the prediction honest.
+    </p>
+    <div class="c-full crop feature__frame" data-parallax>
+      <div class="feature__clip">
+        <div data-parallax-inner><Plate kind="cohort" id="feature" alt="675 dots, one per student in the cohort; the last columns are marked as data not yet available at prediction time" /></div>
+      </div>
+      <a class="btn btn--outline feature__btn" href="https://doi.org/10.1016/j.eswa.2026.134262" target="_blank" rel="noopener">Read in ESWA</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .feature__text { margin-top: 2rem; margin-bottom: 3rem; }
+  .feature__frame { position: relative; }
+  .feature__clip { overflow: hidden; aspect-ratio: 16 / 7; }
+  .feature__clip > div { height: 116%; margin-top: -8%; }
+  .feature__clip :global(.plate) { height: 100%; }
+  .feature__btn { position: absolute; left: 50%; bottom: 2.5rem; translate: -50% 0; color: #fff; background: rgba(0,0,0,0.15); }
+  @media (max-width: 860px) { .feature__clip { aspect-ratio: 4 / 3; } }
+</style>

@@ -1,0 +1,27 @@
+:root {
+  /* Field-notebook palette: white paper, black ink, one signal red, sepia film plates */
+  --paper: #ffffff;
+  --ink: #121212;
+  --grey: #8a8a8a;
+  --grey-2: #b9b9b9;
+  --line: #d6d6d6;
+  --red: #d2261a;
+  --red-dark: #a91c12;
+  --film-dark: #1d1813;
+  --film: #6f5a43;
+  --film-light: #d8c7aa;
+
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+
+  --fs-mono: 0.8125rem;   /* 13px */
+  --fs-mono-s: 0.75rem;
+  --fs-h2: clamp(2rem, 1.2rem + 2.6vw, 3.1rem);
+  --fs-h1: clamp(2.6rem, 1.2rem + 5vw, 5.4rem);
+
+  --gutter: clamp(1rem, 4.2vw, 3.3rem);
+  --col-gap: clamp(0.75rem, 2vw, 1.75rem);
+  --section: clamp(5rem, 3rem + 8vw, 10rem);
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}

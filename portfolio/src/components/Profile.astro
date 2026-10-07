@@ -1,0 +1,50 @@
+---
+import { education, honours, skills, profileStats, person } from "../data/site";
+import StatRow from "./StatRow.astro";
+---
+<section class="section profile" id="profile" aria-labelledby="profile-h">
+  <div class="grid">
+    <h2 id="profile-h" class="c-head" data-reveal>Academic<br />profile</h2>
+    <p class="c-right justify profile__intro" data-scramble>
+      The record behind the routes, as it stands on my CV in October 2026.
+      Publications are listed under the name {person.publishedAs}.
+    </p>
+  </div>
+
+  <div class="profile__stats"><StatRow items={profileStats} /></div>
+
+  <div class="grid">
+    <div class="c-full ruled profile__grid">
+      <div>
+        <h3 class="profile__h">Education</h3>
+        <ul class="profile__list">
+          {education.map((e) => (
+            <li><span class="label">{e.when}</span><span>{e.title}</span><span class="muted">{e.where}</span>{e.note && <span class="muted">{e.note}</span>}</li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h3 class="profile__h">Honours</h3>
+        <ul class="profile__list">
+          {honours.map((h) => (<li><span class="label">{h.when}</span><span>{h.title}</span></li>))}
+        </ul>
+      </div>
+      <div>
+        <h3 class="profile__h">Skills</h3>
+        <ul class="profile__list">
+          {skills.map((s) => (<li><span class="label">{s.label}</span><span>{s.value}</span></li>))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .profile__intro { margin-top: 2rem; }
+  .profile__stats { margin-block: 4rem 3rem; }
+  .profile__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .profile__h { font-size: 1.15rem; margin-bottom: 1.5rem; }
+  .profile__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.25rem; }
+  .profile__list li { display: grid; gap: 0.15rem; }
+  @media (max-width: 860px) { .profile__grid { grid-template-columns: minmax(0, 1fr); } .profile__grid > * { border-right: 1px solid var(--line); } }
+</style>

@@ -1,0 +1,44 @@
+---
+import { existsSync } from "node:fs";
+import { facts } from "../data/site";
+const portrait = existsSync("public/portrait.jpg") ? `${import.meta.env.BASE_URL}portrait.jpg` : "";
+---
+<section class="section founder" aria-label="About me">
+  <div class="grid">
+    <div class="c-full ruled founder__grid">
+      <div class="founder__portrait">
+        <canvas data-portrait data-src={portrait} role="img" aria-label={portrait ? "Halftone portrait of Dang Nguyen Le" : "Halftone monogram NL"}></canvas>
+      </div>
+      <div class="founder__text">
+        <p class="justify" data-scramble>
+          I am Dang Nguyen Le, a researcher at the Faculty of Information Technology,
+          Ton Duc Thang University, and an English teacher. I graduated first of my
+          Computer Science cohort in 2026, one semester early. I publish as Nguyen Le.
+        </p>
+        <p class="justify muted">
+          My work looks for answers that stay correct when data is uncertain, noisy or
+          not yet available: exact pattern-mining algorithms with bounds I can prove,
+          and evaluations of educational models that only use what a school really knows.
+        </p>
+      </div>
+      <dl class="founder__facts">
+        {facts.map((f) => (
+          <div><dt class="label">{f.label}</dt><dd>{f.value}</dd></div>
+        ))}
+      </dl>
+    </div>
+  </div>
+</section>
+
+<style>
+  .founder__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .founder__portrait { display: grid; place-items: center; padding: 1rem; }
+  .founder__portrait canvas { width: min(100%, 15rem); aspect-ratio: 1; display: block; }
+  .founder__text { display: grid; gap: 1.25rem; align-content: start; padding-inline: 1.75rem; }
+  .founder__facts { margin: 0; display: grid; gap: 1.1rem; align-content: start; }
+  .founder__facts dd { margin: 0.2rem 0 0; }
+  @media (max-width: 860px) {
+    .founder__grid { grid-template-columns: minmax(0, 1fr); }
+    .founder__grid > * { border-right: 1px solid var(--line); }
+  }
+</style>
