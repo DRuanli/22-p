@@ -1,7 +1,7 @@
 ---
 const base = import.meta.env.BASE_URL;
 ---
-<section class="hero" data-hero aria-labelledby="hero-h">
+<section class="hero" data-hero data-dark aria-labelledby="hero-h">
   <div class="hero__media" data-hero-media>
     <canvas data-halftone aria-hidden="true"></canvas>
     <div class="hero__shade"></div>
@@ -23,8 +23,8 @@ const base = import.meta.env.BASE_URL;
 
 <style>
   .hero { position: relative; height: 100svh; min-height: 34rem; overflow: hidden; color: #fff; background: var(--film-dark); }
-  .hero__media { position: absolute; inset: 0; }
-  .hero__media canvas { width: 100%; height: 100%; display: block; }
+  .hero__media { position: absolute; inset: 0; will-change: transform; }
+  .hero__media :global(canvas) { position: absolute; inset: -4%; width: 108%; height: 108%; display: block; will-change: transform, opacity; }
   .hero__shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20, 16, 12, 0.35), rgba(20, 16, 12, 0.05) 40%, rgba(20, 16, 12, 0.55)); }
   .hero__inner { position: relative; height: 100%; grid-template-rows: auto 1fr auto; padding-block: 7.5rem 4rem; }
   .hero__title { grid-column: 1 / span 8; grid-row: 1; font-size: var(--fs-h1); }

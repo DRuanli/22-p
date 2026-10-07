@@ -17,7 +17,7 @@ const heading = route.months
 ---
 <Base title={`${route.name}: ${route.title} · Nguyen Le`} description={route.overview}>
   <main id="main">
-    <section class="dhero" aria-labelledby="dhero-h">
+    <section class="dhero" data-dark aria-labelledby="dhero-h">
       <div class="dhero__media" data-hero-media><Plate kind={route.plate} id={route.id} eager /></div>
       <div class="dhero__inner grid">
         <h1 id="dhero-h" class="dhero__title" data-hero-title>{route.name}</h1>
@@ -35,7 +35,7 @@ const heading = route.months
 
 <style>
   .dhero { position: relative; height: 88svh; min-height: 30rem; overflow: hidden; color: #fff; }
-  .dhero__media { position: absolute; inset: 0; }
+  .dhero__media { position: absolute; inset: 0; will-change: transform; }
   .dhero__media :global(.plate) { height: 100%; }
   .dhero__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,16,12,0.5), rgba(20,16,12,0) 45%); }
   .dhero__inner { position: relative; z-index: 1; padding-top: 7.5rem; align-content: start; }

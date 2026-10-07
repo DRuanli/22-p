@@ -6,7 +6,7 @@ import Routes from "../components/Routes.astro";
 import Feature from "../components/Feature.astro";
 import Itinerary from "../components/Itinerary.astro";
 import Profile from "../components/Profile.astro";
-import Papers from "../components/Papers.astro";
+import Publications from "../components/Publications.astro";
 import Faq from "../components/Faq.astro";
 import Footer from "../components/Footer.astro";
 import { milestones } from "../data/site";
@@ -21,6 +21,7 @@ import { milestones } from "../data/site";
     <Founder />
     <Routes />
     <Feature />
+    <Publications />
     <Itinerary
       id="journey"
       heading="The route<br />so far"
@@ -29,7 +30,6 @@ import { milestones } from "../data/site";
       cta={{ label: "Plan the next stop", href: "#contact" }}
     />
     <Profile />
-    <Papers />
     <Faq />
   </main>
   <Footer />
