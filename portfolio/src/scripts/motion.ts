@@ -52,30 +52,53 @@ if (panel && !reduce) {
   });
 }
 
-/* ---------- nav: CTA replaces the links once past the hero; rulers track progress ---------- */
+/* ---------- nav + rulers: one batched update per frame, no layout reads while scrolling ---------- */
 
 const nav = $("[data-nav]");
-const rulerIdx = $$("[data-ruler-index]");
-const rulerTicks = $$("[data-rulers] .ruler").map((r) => $$("[data-tick]", r));
-function onScroll() {
-  const y = window.scrollY;
-  nav?.classList.toggle("is-cta", y > innerHeight * 0.85);
-  const max = document.documentElement.scrollHeight - innerHeight;
-  const p = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0;
-  rulerIdx.forEach((el) => {
-    const h = (el.parentElement as HTMLElement).clientHeight;
-    el.style.transform = `translateY(${p * h}px)`;
-  });
-  rulerTicks.forEach((ticks) => {
-    const n = ticks.length - 1;
-    ticks.forEach((t, i) => {
-      const d = Math.abs(i / n - p) * n;
-      t.style.transform = `scaleX(${1 + Math.max(0, 1 - d / 2.5) * 0.85})`;
+const rulers = $$("[data-rulers] .ruler").map((r) => ({ idx: $("[data-ruler-index]", r)!, ticks: $$("[data-tick]", r) }));
+const tickState = rulers.map((r) => r.ticks.map(() => 1));
+let rulerH = 0, maxScroll = 1, lastP = -1, ctaOn: boolean | null = null;
+function measure() {
+  rulerH = rulers[0]?.idx.parentElement?.clientHeight ?? 0;
+  maxScroll = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+  lastP = -1;
+}
+function paintScroll(y: number) {
+  const cta = y > innerHeight * 0.85;
+  if (cta !== ctaOn) { ctaOn = cta; nav?.classList.toggle("is-cta", cta); }
+  const p = Math.min(1, Math.max(0, y / maxScroll));
+  if (Math.abs(p - lastP) < 0.0004) return;
+  lastP = p;
+  rulers.forEach((r, k) => {
+    r.idx.style.transform = `translate3d(0, ${(p * rulerH).toFixed(1)}px, 0)`;
+    const n = r.ticks.length - 1;
+    r.ticks.forEach((t, i) => {
+      const v = Math.round((1 + Math.max(0, 1 - (Math.abs(i / n - p) * n) / 2.5) * 0.85) * 100) / 100;
+      if (v !== tickState[k][i]) { tickState[k][i] = v; t.style.transform = `scaleX(${v})`; }
     });
   });
 }
-window.addEventListener("scroll", onScroll, { passive: true });
-onScroll();
+measure();
+window.addEventListener("resize", measure);
+ScrollTrigger.addEventListener("refresh", measure);
+if (lenis) lenis.on("scroll", (e: { scroll: number }) => paintScroll(e.scroll));
+else {
+  let queued = false;
+  window.addEventListener("scroll", () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; paintScroll(window.scrollY); });
+  }, { passive: true });
+}
+paintScroll(window.scrollY);
+
+// nav text turns white while a dark section sits under it
+$$("[data-dark]").forEach((sec) => {
+  ScrollTrigger.create({
+    trigger: sec, start: "top top+=40", end: "bottom top+=40",
+    onToggle: (self) => nav?.classList.toggle("is-dark", self.isActive),
+  });
+});
 
 /* ---------- scramble text ---------- */
 
@@ -110,50 +133,55 @@ if (!reduce) {
   });
 }
 
-/* ---------- hero: animated halftone landscape ---------- */
+/* ---------- hero: halftone landscape ----------
+   Two frames of the contour field are drawn once; the animation only drifts and cross-fades
+   them (transform + opacity), so the browser never repaints the hero while it moves. */
 
-const hero = $<HTMLCanvasElement>("[data-halftone]");
-if (hero) {
-  const ctx = hero.getContext("2d")!;
-  let w = 0, h = 0, visible = true, last = 0;
-  const cell = 10;
-  const resize = () => {
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    w = hero.clientWidth; h = hero.clientHeight;
-    hero.width = w * dpr; hero.height = h * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  };
-  const draw = (t: number) => {
-    ctx.fillStyle = "#1d1813";
-    ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = "#d8c7aa";
-    ctx.beginPath();
-    const s = t * 0.001;
-    for (let y = cell / 2; y < h; y += cell) {
-      const ny = y / h;
-      for (let x = cell / 2; x < w; x += cell) {
-        const f =
-          Math.sin(x * 0.0042 + s * 0.15) * Math.cos(y * 0.006 - s * 0.1) +
-          0.5 * Math.sin((x + y) * 0.009 + s * 0.25) +
-          0.25 * Math.sin(x * 0.021 - y * 0.013 + s * 0.4);
-        const c = (f * 2.2) % 1;
-        const band = 1 - Math.abs((c < 0 ? c + 1 : c) - 0.5) * 2; // contour ridges
-        const v = Math.pow(band, 3) * (0.25 + 0.75 * ny) + 0.08 * ny;
-        const r = v * cell * 0.55;
-        if (r > 0.35) { ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, Math.PI * 2); }
-      }
+function drawHalftone(canvas: HTMLCanvasElement, time: number) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  const ctx = canvas.getContext("2d")!;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = "#1d1813";
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = "#d8c7aa";
+  ctx.beginPath();
+  const cell = 10, s = time;
+  for (let y = cell / 2; y < h; y += cell) {
+    const ny = y / h;
+    for (let x = cell / 2; x < w; x += cell) {
+      const f =
+        Math.sin(x * 0.0042 + s * 0.15) * Math.cos(y * 0.006 - s * 0.1) +
+        0.5 * Math.sin((x + y) * 0.009 + s * 0.25) +
+        0.25 * Math.sin(x * 0.021 - y * 0.013 + s * 0.4);
+      const c = (f * 2.2) % 1;
+      const band = 1 - Math.abs((c < 0 ? c + 1 : c) - 0.5) * 2; // contour ridges
+      const r = (Math.pow(band, 3) * (0.25 + 0.75 * ny) + 0.08 * ny) * cell * 0.55;
+      if (r > 0.35) { ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, Math.PI * 2); }
     }
-    ctx.fill();
+  }
+  ctx.fill();
+}
+
+const heroA = $<HTMLCanvasElement>("[data-halftone]");
+if (heroA) {
+  const heroB = heroA.cloneNode() as HTMLCanvasElement;
+  heroB.style.opacity = "0";
+  heroA.after(heroB);
+  const paint = () => {
+    drawHalftone(heroA, 2);
+    const idle = (window as any).requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 200));
+    idle(() => drawHalftone(heroB, 3.4));
   };
-  const loop = (t: number) => {
-    if (visible && t - last > 33) { draw(t); last = t; }
-    requestAnimationFrame(loop);
-  };
-  resize();
-  window.addEventListener("resize", () => { resize(); draw(performance.now()); });
-  new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(hero);
-  if (reduce) draw(12000);
-  else requestAnimationFrame(loop);
+  paint();
+  let rt: number | undefined;
+  window.addEventListener("resize", () => { clearTimeout(rt); rt = window.setTimeout(paint, 250); });
+  if (!reduce) {
+    gsap.to(heroB, { opacity: 1, duration: 7, ease: "sine.inOut", repeat: -1, yoyo: true, delay: 1 });
+    gsap.fromTo(heroA, { xPercent: -1.5, yPercent: 1 }, { xPercent: 1.5, yPercent: -1, duration: 16, ease: "sine.inOut", repeat: -1, yoyo: true });
+    gsap.fromTo(heroB, { xPercent: 1.5, yPercent: -1 }, { xPercent: -1.5, yPercent: 1, duration: 19, ease: "sine.inOut", repeat: -1, yoyo: true });
+  }
 }
 
 /* ---------- founder: halftone portrait (photo if provided, monogram otherwise) ---------- */
@@ -248,38 +276,93 @@ if (routesRoot) {
 $$("[data-itin]").forEach((list) => {
   const rows = $$("[data-itin-row]", list);
   // Whichever row is nearest the line at 55% of the viewport is active, so the first and
-  // last rows also get their turn (and one row is always lit while the list is on screen).
+  // last rows also get their turn. Row centres are measured on refresh, not while scrolling.
+  let centres: number[] = [];
+  let current = -1;
+  const measureRows = () => { centres = rows.map((r) => { const b = r.getBoundingClientRect(); return b.top + window.scrollY + b.height / 2; }); };
   const update = () => {
-    const line = innerHeight * 0.55;
-    let best = rows[0], bestD = Infinity;
-    rows.forEach((r) => {
-      const b = r.getBoundingClientRect();
-      const d = Math.abs(b.top + b.height / 2 - line);
-      if (d < bestD) { bestD = d; best = r; }
-    });
-    rows.forEach((r) => r.classList.toggle("is-active", r === best));
+    const line = window.scrollY + innerHeight * 0.55;
+    let best = 0;
+    centres.forEach((c, i) => { if (Math.abs(c - line) < Math.abs(centres[best] - line)) best = i; });
+    if (best === current) return;
+    current = best;
+    rows.forEach((r, i) => r.classList.toggle("is-active", i === best));
   };
-  ScrollTrigger.create({ trigger: list, start: "top bottom", end: "bottom top", onUpdate: update, onRefresh: update });
+  ScrollTrigger.create({ trigger: list, start: "top bottom", end: "bottom top", onUpdate: update, onRefresh: () => { measureRows(); current = -1; update(); } });
 });
 
 /* ---------- carousels ---------- */
-
-const papersRoot = $("[data-papers]");
-if (papersRoot) {
-  const embla = EmblaCarousel(papersRoot, { loop: true, align: "center", duration: 32 });
-  const slides = embla.slideNodes();
-  const sync = () => slides.forEach((s, i) => s.classList.toggle("is-snapped", i === embla.selectedScrollSnap()));
-  embla.on("select", sync).on("reInit", sync);
-  sync();
-  $("[data-papers-prev]")?.addEventListener("click", () => embla.scrollPrev());
-  $("[data-papers-next]")?.addEventListener("click", () => embla.scrollNext());
-}
 
 const exploreRoot = $("[data-explore]");
 if (exploreRoot) {
   const embla = EmblaCarousel(exploreRoot, { align: "start", containScroll: "trimSnaps", dragFree: true });
   $("[data-explore-prev]")?.addEventListener("click", () => embla.scrollPrev());
   $("[data-explore-next]")?.addEventListener("click", () => embla.scrollNext());
+}
+
+/* ---------- publications: expandable entries, copy citation, pointer preview ---------- */
+
+const pubs = $("[data-pubs]");
+if (pubs) {
+  const items = $$("[data-pub]", pubs);
+  items.forEach((item) => {
+    const btn = $<HTMLButtonElement>("[data-pub-toggle]", item)!;
+    const panel = $("[data-pub-panel]", item)!;
+    btn.addEventListener("click", () => {
+      const open = btn.getAttribute("aria-expanded") !== "true";
+      btn.setAttribute("aria-expanded", String(open));
+      item.classList.toggle("is-open", open);
+      if (reduce) { panel.hidden = !open; ScrollTrigger.refresh(); return; }
+      gsap.killTweensOf(panel);
+      if (open) {
+        panel.hidden = false;
+        gsap.fromTo(panel, { height: 0 }, { height: "auto", duration: 0.6, ease: "power3.out", onComplete: () => ScrollTrigger.refresh() });
+        gsap.from(panel.querySelectorAll("dl > div, .pubs__cite > *"), { opacity: 0, y: 10, duration: 0.45, stagger: 0.04, delay: 0.1, ease: "power2.out" });
+      } else {
+        gsap.to(panel, { height: 0, duration: 0.45, ease: "power2.inOut", onComplete: () => { panel.hidden = true; gsap.set(panel, { clearProps: "height" }); ScrollTrigger.refresh(); } });
+      }
+    });
+
+    const copy = $<HTMLButtonElement>("[data-copy]", item);
+    const cite = $("[data-citation]", item);
+    copy?.addEventListener("click", async () => {
+      const label = "Copy citation";
+      try {
+        await navigator.clipboard.writeText(cite?.textContent?.trim() ?? "");
+        scramble(copy, "Copied", 0.5);
+      } catch {
+        // clipboard blocked: select the citation so it can be copied by hand
+        const range = document.createRange();
+        if (cite) { range.selectNodeContents(cite); getSelection()?.removeAllRanges(); getSelection()?.addRange(range); }
+        scramble(copy, "Selected, press Ctrl+C", 0.5);
+      }
+      setTimeout(() => scramble(copy, label, 0.5), 2200);
+    });
+  });
+
+  // a film plate follows the pointer over the list (fine pointers only)
+  const preview = $("[data-pub-preview]", pubs);
+  if (preview && !reduce && window.matchMedia("(hover: hover) and (min-width: 861px)").matches) {
+    const xTo = gsap.quickTo(preview, "x", { duration: 0.55, ease: "power3.out" });
+    const yTo = gsap.quickTo(preview, "y", { duration: 0.55, ease: "power3.out" });
+    const plates = $$("[data-preview]", preview);
+    let shown = false;
+    const show = (on: boolean) => {
+      if (on === shown) return;
+      shown = on;
+      gsap.to(preview, { opacity: on ? 1 : 0, scale: on ? 1 : 0.92, duration: 0.35, ease: "power2.out" });
+    };
+    gsap.set(preview, { scale: 0.92, xPercent: -50, yPercent: -110 });
+    items.forEach((item) => {
+      const row = $("[data-pub-toggle]", item)!;
+      row.addEventListener("pointerenter", () => {
+        plates.forEach((pl) => pl.classList.toggle("is-on", pl.dataset.preview === item.dataset.plate));
+        show(true);
+      });
+      row.addEventListener("pointerleave", () => show(false));
+    });
+    pubs.addEventListener("pointermove", (e) => { xTo(e.clientX); yTo(e.clientY); });
+  }
 }
 
 /* ---------- FAQ cells ---------- */

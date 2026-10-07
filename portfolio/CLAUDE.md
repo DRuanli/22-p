@@ -30,13 +30,17 @@ Home (`src/pages/index.astro`):
 4. Feature: 675-student cohort plate, wide crop frame, [ READ IN ESWA ].
 5. The route so far: itinerary rows (when · where · title) with a red note box.
 6. Academic profile: stat row + ruled grid (Education, Honours, Skills).
-7. Published routes: 3-column PREV/NEXT slider (stands in for testimonials until real quotes exist).
+7. Publications (after Feature): stat row + expandable entries (citation, copy, route link), a
+   plate preview follows the pointer on desktop.
 8. FAQ: ruled 4-column grid.
 9. Footer: big email in a crop frame, Scholar, ORCID, CV when public/cv.pdf exists.
 Route pages (`src/pages/routes/[id].astro`): plate hero, stat row, N-month overview itinerary,
 CTA, "Continue exploring" cards.
 
 ## Motion rules
+- Smoothness first: never redraw canvases or SVG filters per frame; animate pre-rendered
+  layers with transform/opacity. Scroll work is batched into Lenis' scroll event with cached
+  measurements (refresh on ScrollTrigger refresh/resize). No mix-blend-mode on fixed elements.
 - One orchestrated hero load sequence (SplitText lines rise + video scale-in). Everything
   else is scroll-linked and quiet; no fade-up on every block.
 - Register plugins once in `src/scripts/motion.ts`; wrap all setup in `gsap.matchMedia()`

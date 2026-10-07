@@ -1,13 +1,14 @@
 ---
 const base = import.meta.env.BASE_URL;
 ---
-<header class="nav" data-nav>
+<header class="nav is-dark" data-nav>
   <a class="nav__logo" href={base} aria-label="Nguyen Le, home">
     <span class="nav__logo-1">Nguyen Le</span>
     <span class="nav__logo-2">Academic journey</span>
   </a>
   <nav class="nav__links" aria-label="Primary">
     <a class="bracket" href={`${base}#routes`}>Routes</a>
+    <a class="bracket" href={`${base}#publications`}>Publications</a>
     <a class="bracket" href={`${base}#profile`}>Profile</a>
   </nav>
   <a class="btn nav__cta" href={`${base}#contact`} data-nav-cta>Get in touch</a>
@@ -21,8 +22,10 @@ const base = import.meta.env.BASE_URL;
     pointer-events: none;
   }
   .nav > * { pointer-events: auto; }
-  .nav__logo, .nav__links { mix-blend-mode: difference; color: #fff; }
-  .nav__logo { display: grid; text-decoration: none; line-height: 0.9; }
+  /* colour flips over dark sections (set from motion.ts) instead of a costly blend mode */
+  .nav__logo, .nav__links { color: var(--ink); transition: color 0.35s, opacity 0.3s; }
+  .nav.is-dark .nav__logo, .nav.is-dark .nav__links { color: #fff; }
+  .nav__logo { display: grid; text-decoration: none; line-height: 0.9; white-space: nowrap; }
   .nav__logo-1 { font: 900 1.45rem/0.9 var(--display); letter-spacing: -0.01em; }
   .nav__logo-2 { font: 700 0.62rem/1.2 var(--display); letter-spacing: 0.06em; margin-top: 0.15rem; }
   .nav__links { display: flex; gap: 2rem; margin-left: auto; }
@@ -35,5 +38,10 @@ const base = import.meta.env.BASE_URL;
   .nav.is-cta .nav__cta { opacity: 1; transform: none; pointer-events: auto; }
   .nav.is-cta .nav__links { opacity: 0; pointer-events: none; }
   .nav__links { transition: opacity 0.3s; }
+  @media (max-width: 860px) {
+    /* on small screens text runs under the bar, so give it paper behind it outside dark sections */
+    .nav { transition: background 0.35s; }
+    .nav:not(.is-dark) { background: var(--paper); }
+  }
   @media (max-width: 600px) { .nav__links { gap: 1rem; } .nav__cta { padding: 0.75em 1em; font-size: 0.7rem; } }
 </style>

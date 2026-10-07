@@ -27,7 +27,7 @@ const util = [38, -16, 62, 28, -34, 50, -12, 70, 18, -28, 44, -20, 30];
 
 const ridge = "M0 214 L40 196 L70 204 L110 170 L150 188 L190 150 L230 176 L270 160 L310 184 L350 166 L400 190 L400 320 L0 320Z";
 ---
-<div class:list={["plate", cls]}>
+<div class:list={["plate", cls]} style={`--grain: url(${import.meta.env.BASE_URL}grain.svg)`}>
   {photo ? (
     <img src={photo} alt={alt} loading={eager ? "eager" : "lazy"} decoding="async" />
   ) : (
@@ -42,10 +42,6 @@ const ridge = "M0 214 L40 196 L70 204 L110 170 L150 188 L190 150 L230 176 L270 1
           <stop offset="0.55" stop-color="#000" stop-opacity="0" />
           <stop offset="1" stop-color="#1d1813" stop-opacity="0.55" />
         </radialGradient>
-        <filter id={`${uid}-grain`} x="0" y="0" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" />
-          <feColorMatrix values="0 0 0 0 0.11  0 0 0 0 0.09  0 0 0 0 0.07  0 0 0 0.55 0" />
-        </filter>
       </defs>
       <rect width="400" height="320" fill={`url(#${uid}-sky)`} />
 
@@ -80,17 +76,18 @@ const ridge = "M0 214 L40 196 L70 204 L110 170 L150 188 L190 150 L230 176 L270 1
 
       {kind === "cohort" && (
         <g>
+          <defs>
+            {["dark", "light"].map((tone) => (
+              <pattern id={`${uid}-${tone}`} x="17.4" y="17.4" width="13.6" height="11.6" patternUnits="userSpaceOnUse">
+                <ellipse cx="5.1" cy="5.1" rx="3.2" ry="2.2" fill="#5c4a36" opacity="0.5" />
+                <circle cx="2.6" cy="2.6" r="2.6" fill={tone === "dark" ? "#2a2119" : "#efe6d4"} />
+              </pattern>
+            ))}
+          </defs>
           <rect width="400" height="320" fill="#b89d77" />
-          {Array.from({ length: 675 }, (_, i) => {
-            const x = i % 27, y = Math.floor(i / 27);
-            const jx = Math.sin(i * 12.9898) * 2.2, jy = Math.cos(i * 78.233) * 2.2;
-            return (
-              <g>
-                <ellipse cx={20 + x * 13.6 + jx + 2.5} cy={20 + y * 11.6 + jy + 2.5} rx="3.2" ry="2.2" fill="#5c4a36" opacity="0.5" />
-                <circle cx={20 + x * 13.6 + jx} cy={20 + y * 11.6 + jy} r="2.6" fill={x > 19 ? "#efe6d4" : "#2a2119"} />
-              </g>
-            );
-          })}
+          {/* 27 x 25 = 675 students; the last 7 columns are data not yet known at prediction time */}
+          <rect x="17.4" y="17.4" width={20 * 13.6} height={25 * 11.6} fill={`url(#${uid}-dark)`} />
+          <rect x={17.4 + 20 * 13.6} y="17.4" width={7 * 13.6} height={25 * 11.6} fill={`url(#${uid}-light)`} />
         </g>
       )}
 
@@ -123,13 +120,16 @@ const ridge = "M0 214 L40 196 L70 204 L110 170 L150 188 L190 150 L230 176 L270 1
       )}
 
       <rect width="400" height="320" fill={`url(#${uid}-vig)`} />
-      <rect width="400" height="320" filter={`url(#${uid}-grain)`} opacity="0.55" />
     </svg>
   )}
 </div>
 
 <style>
   .plate { position: relative; overflow: hidden; background: var(--film-dark); }
+  .plate::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: var(--grain) 0 0 / 240px 240px; opacity: 0.6;
+  }
   .plate svg, .plate img { display: block; width: 100%; height: 100%; object-fit: cover; }
   .plate img { filter: sepia(0.55) saturate(0.8) contrast(1.05); }
 </style>

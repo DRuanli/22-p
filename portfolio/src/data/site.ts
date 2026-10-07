@@ -184,32 +184,62 @@ export const facts = [
   { label: "2025", value: "Intern, FPT Information System" },
 ];
 
-export type Paper = { venue: string; year: string; title: string; authors: string; href?: string; status: string };
+export type Paper = {
+  venue: string;
+  year: string;
+  date: string;
+  title: string;
+  authors: string;
+  details: string;
+  quartile: string;
+  href?: string;
+  route: string; // id in routes[]
+  citation: string; // APA, as on the CV
+};
 
 export const papers: Paper[] = [
   {
     venue: "Expert Systems with Applications",
     year: "2026",
+    date: "Online 6 Sep 2026",
     title: "Behavioural leakage and the illusion of actionability: a deployment-honest evaluation framework for educational early warning systems",
     authors: "Le, N., Lam, T., & Duong, H.-P.",
+    details: "Vol. 333, 134262 (2027 volume)",
+    quartile: "Q1",
     href: "https://doi.org/10.1016/j.eswa.2026.134262",
-    status: "333, 134262 · Q1",
+    route: "ic-fs",
+    citation: "Le, N., Lam, T., & Duong, H.-P. (2026). Behavioural leakage and the illusion of actionability: a deployment-honest evaluation framework for educational early warning systems. Expert Systems with Applications, 333, 134262. https://doi.org/10.1016/j.eswa.2026.134262",
   },
   {
     venue: "PLOS ONE",
     year: "2026",
+    date: "Published 17 Jun 2026",
     title: "Best-first search–based approach for mining top-k closed frequent itemsets from uncertain databases",
     authors: "Le, N., Vo, H., & Nguyen, T.",
+    details: "21(6), e0351951",
+    quartile: "Q1",
     href: "https://doi.org/10.1371/journal.pone.0351951",
-    status: "21(6), e0351951 · Q1",
+    route: "tufci",
+    citation: "Le, N., Vo, H., & Nguyen, T. (2026). Best-first search–based approach for mining top-k closed frequent itemsets from uncertain databases. PLOS ONE, 21(6), e0351951. https://doi.org/10.1371/journal.pone.0351951",
   },
   {
-    venue: "Journal of King Saud University – CIS",
+    venue: "Journal of King Saud University – Computer and Information Sciences",
     year: "In press",
+    date: "Accepted Aug 2026",
     title: "Exact and heuristic approaches for mining top-k high-utility itemsets in uncertain databases with mixed utilities",
     authors: "Le, N., Vo, H., & Nguyen, T.",
-    status: "Accepted August 2026 · Q1",
+    details: "In press",
+    quartile: "Q1",
+    route: "ptk-huim",
+    citation: "Le, N., Vo, H., & Nguyen, T. (in press). Exact and heuristic approaches for mining top-k high-utility itemsets in uncertain databases with mixed utilities. Journal of King Saud University – Computer and Information Sciences.",
   },
+];
+
+export const publicationStats = [
+  { label: "Journal articles", value: "3" },
+  { label: "Quartile (SJR 2025)", value: "3 × Q1" },
+  { label: "Authorship", value: "First author on all" },
+  { label: "Status", value: "2 published · 1 in press" },
 ];
 
 export const education = [

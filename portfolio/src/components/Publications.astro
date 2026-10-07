@@ -1,0 +1,120 @@
+---
+import { papers, routes, publicationStats, person } from "../data/site";
+import StatRow from "./StatRow.astro";
+import Plate from "./Plate.astro";
+const base = import.meta.env.BASE_URL;
+const routeOf = (id: string) => routes.find((r) => r.id === id)!;
+// Bold the author's own name, as on the CV.
+const boldMe = (a: string) => a.replace("Le, N.", "<strong>Le, N.</strong>");
+---
+<section class="section pubs" id="publications" aria-labelledby="pubs-h" data-pubs>
+  <div class="grid">
+    <h2 id="pubs-h" class="c-head" data-reveal>Publications</h2>
+    <p class="c-right justify pubs__intro" data-scramble>
+      Journal articles, first author on all, published under the name {person.publishedAs}.
+      Open an entry for the citation and the route behind it.
+    </p>
+  </div>
+
+  <div class="pubs__stats"><StatRow items={publicationStats} /></div>
+
+  <ol class="grid pubs__list">
+    {papers.map((p, i) => {
+      const r = routeOf(p.route);
+      return (
+        <li class="c-full pubs__item" data-pub data-plate={p.route}>
+          <button class="pubs__row" type="button" aria-expanded="false" aria-controls={`pub-${i}`} data-pub-toggle>
+            <span class="pubs__year"><span>{p.year}</span><span class="label">{p.quartile}</span></span>
+            <span class="pubs__title">{p.title}</span>
+            <span class="pubs__venue muted">{p.venue}</span>
+            <span class="pubs__sign" aria-hidden="true"></span>
+          </button>
+          <div class="pubs__panel" id={`pub-${i}`} hidden data-pub-panel>
+            <div class="pubs__panel-inner">
+              <dl class="pubs__meta">
+                <div><dt class="label">Authors</dt><dd set:html={boldMe(p.authors)} /></div>
+                <div><dt class="label">Venue</dt><dd>{p.venue}</dd></div>
+                <div><dt class="label">Details</dt><dd>{p.details} · {p.date}</dd></div>
+              </dl>
+              <div class="pubs__cite">
+                <p class="label">Cite (APA)</p>
+                <p class="pubs__citation" data-citation>{p.citation}</p>
+                <div class="pubs__actions">
+                  {p.href && <a class="btn btn--tight" href={p.href} target="_blank" rel="noopener">Read the article</a>}
+                  <button class="btn btn--tight btn--ghost-ink" type="button" data-copy>Copy citation</button>
+                  <a class="bracket" href={`${base}routes/${r.id}/`} data-transition>Route: {r.name}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+      );
+    })}
+  </ol>
+
+  <!-- plate that follows the pointer over the list (desktop) -->
+  <div class="pubs__preview" aria-hidden="true" data-pub-preview>
+    {papers.map((p) => (
+      <div class="pubs__preview-item" data-preview={p.route}><Plate kind={routeOf(p.route).plate} id={p.route} /></div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .pubs { position: relative; }
+  .pubs__intro { margin-top: 2rem; }
+  .pubs__stats { margin-block: 4rem 2.5rem; }
+  .pubs__list { list-style: none; margin: 0; padding-block: 0; }
+  .pubs__item { border-top: 1px solid var(--line); position: relative; }
+  .pubs__item:last-child { border-bottom: 1px solid var(--line); }
+  .pubs__item::before {
+    content: ""; position: absolute; left: -6px; top: -1px; width: 14px; height: 10px;
+    border-top: 1.5px solid var(--red); border-left: 1.5px solid var(--red);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .pubs__item:hover::before, .pubs__item.is-open::before { opacity: 1; }
+
+  .pubs__row {
+    width: 100%; display: grid; align-items: start; gap: 1rem 2rem;
+    grid-template-columns: 8rem minmax(0, 1fr) minmax(0, 16rem) 14px;
+    padding: 1.75rem 0; background: none; border: 0; text-align: left; cursor: pointer;
+    font: inherit; text-transform: inherit; letter-spacing: inherit; color: inherit;
+  }
+  .pubs__year { display: grid; gap: 0.25rem; }
+  .pubs__title { font: 800 clamp(1.05rem, 0.8rem + 0.9vw, 1.6rem)/1.08 var(--display); text-transform: uppercase; transition: color 0.3s; }
+  .pubs__row:hover .pubs__title, .pubs__item.is-open .pubs__title { color: var(--red); }
+  .pubs__venue { font-size: var(--fs-mono-s); }
+  .pubs__sign { position: relative; width: 14px; height: 14px; margin-top: 0.35rem; }
+  .pubs__sign::before, .pubs__sign::after { content: ""; position: absolute; left: 0; top: 50%; width: 100%; height: 1.5px; background: var(--red); transition: transform 0.4s var(--ease); }
+  .pubs__sign::after { transform: rotate(90deg); }
+  .pubs__item.is-open .pubs__sign::after { transform: rotate(0); }
+
+  .pubs__panel { overflow: hidden; }
+  .pubs__panel-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 2rem; padding: 0 0 2.25rem 10rem; }
+  .pubs__meta { margin: 0; display: grid; gap: 1rem; align-content: start; }
+  .pubs__meta dd { margin: 0.2rem 0 0; }
+  .pubs__cite { display: grid; gap: 0.75rem; align-content: start; }
+  .pubs__cite, .pubs__meta { min-width: 0; }
+  .pubs__citation { overflow-wrap: anywhere; text-transform: none; letter-spacing: 0; font-size: 0.875rem; line-height: 1.6; border-left: 1.5px solid var(--red); padding-left: 1rem; }
+  .pubs__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.5rem; margin-top: 0.5rem; }
+  :global(.btn--ghost-ink) { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+  :global(.btn--ghost-ink:hover) { background: var(--ink); color: #fff; }
+
+  .pubs__preview {
+    position: fixed; left: 0; top: 0; z-index: 30; width: 15rem; aspect-ratio: 352 / 310;
+    pointer-events: none; opacity: 0; will-change: transform, opacity;
+  }
+  .pubs__preview-item { position: absolute; inset: 0; opacity: 0; transition: opacity 0.35s; }
+  .pubs__preview-item.is-on { opacity: 1; }
+  .pubs__preview-item :global(.plate) { height: 100%; }
+
+  @media (max-width: 860px) {
+    .pubs__row { grid-template-columns: minmax(0, 1fr) 14px; }
+    .pubs__year { grid-column: 1; grid-auto-flow: column; justify-content: start; gap: 1rem; }
+    .pubs__title { grid-column: 1; }
+    .pubs__venue { grid-column: 1; }
+    .pubs__sign { grid-column: 2; grid-row: 1; }
+    .pubs__panel-inner { grid-template-columns: minmax(0, 1fr); padding-left: 0; }
+  }
+  @media (hover: none), (max-width: 860px) { .pubs__preview { display: none; } }
+</style>

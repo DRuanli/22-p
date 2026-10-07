@@ -22,7 +22,7 @@ import Plate from "./Plate.astro";
   .feature__text { margin-top: 2rem; margin-bottom: 3rem; }
   .feature__frame { position: relative; }
   .feature__clip { overflow: hidden; aspect-ratio: 16 / 7; }
-  .feature__clip > div { height: 116%; margin-top: -8%; }
+  .feature__clip > div { height: 116%; margin-top: -8%; will-change: transform; }
   .feature__clip :global(.plate) { height: 100%; }
   .feature__btn { position: absolute; left: 50%; bottom: 2.5rem; translate: -50% 0; color: #fff; background: rgba(0,0,0,0.15); }
   @media (max-width: 860px) { .feature__clip { aspect-ratio: 4 / 3; } }
