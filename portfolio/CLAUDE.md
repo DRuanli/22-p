@@ -1,6 +1,6 @@
 # Personal site — project brief for Claude Code
 
-A personal introduction site for a young researcher and English teacher from Vietnam.
+An academic profile site for a young researcher from Vietnam (data mining, educational ML).
 Layout rhythm and motion are modelled on https://tour-kyrgyzstan.com (a Framer travel site), as
 shown in the owner's screen recordings: white paper, heavy uppercase grotesk headlines starting on
 column 5, uppercase justified monospace text, red bracket buttons `[ … ]`, red crop marks around
@@ -34,7 +34,8 @@ Home (`src/pages/index.astro`):
    plate preview follows the pointer on desktop.
 8. FAQ: ruled 4-column grid.
 9. Footer: big email in a crop frame, Scholar, ORCID, CV when public/cv.pdf exists.
-Route pages (`src/pages/routes/[id].astro`): plate hero, stat row, N-month overview itinerary,
+Route pages (`src/pages/routes/[id].astro`): plate hero, stat row, "What the paper found"
+(PaperDepth: summary, count-up figures, BarChart, contributions, data), N-month overview itinerary,
 CTA, "Continue exploring" cards.
 
 ## Motion rules

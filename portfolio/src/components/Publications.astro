@@ -2,6 +2,7 @@
 import { papers, routes, publicationStats, person } from "../data/site";
 import StatRow from "./StatRow.astro";
 import Plate from "./Plate.astro";
+import PaperDepth from "./PaperDepth.astro";
 const base = import.meta.env.BASE_URL;
 const routeOf = (id: string) => routes.find((r) => r.id === id)!;
 // Bold the author's own name, as on the CV.
@@ -12,7 +13,7 @@ const boldMe = (a: string) => a.replace("Le, N.", "<strong>Le, N.</strong>");
     <h2 id="pubs-h" class="c-head" data-reveal>Publications</h2>
     <p class="c-right justify pubs__intro" data-scramble>
       Journal articles, first author on all, published under the name {person.publishedAs}.
-      Open an entry for the citation and the route behind it.
+      Open an entry for what it found, the key numbers, the citation and the route behind it.
     </p>
   </div>
 
@@ -31,6 +32,8 @@ const boldMe = (a: string) => a.replace("Le, N.", "<strong>Le, N.</strong>");
           </button>
           <div class="pubs__panel" id={`pub-${i}`} hidden data-pub-panel>
             <div class="pubs__panel-inner">
+              <PaperDepth paper={p} compact />
+              <div class="pubs__ref">
               <dl class="pubs__meta">
                 <div><dt class="label">Authors</dt><dd set:html={boldMe(p.authors)} /></div>
                 <div><dt class="label">Venue</dt><dd>{p.venue}</dd></div>
@@ -44,6 +47,7 @@ const boldMe = (a: string) => a.replace("Le, N.", "<strong>Le, N.</strong>");
                   <button class="btn btn--tight btn--ghost-ink" type="button" data-copy>Copy citation</button>
                   <a class="bracket" href={`${base}routes/${r.id}/`} data-transition>Route: {r.name}</a>
                 </div>
+              </div>
               </div>
             </div>
           </div>
@@ -90,7 +94,8 @@ const boldMe = (a: string) => a.replace("Le, N.", "<strong>Le, N.</strong>");
   .pubs__item.is-open .pubs__sign::after { transform: rotate(0); }
 
   .pubs__panel { overflow: hidden; }
-  .pubs__panel-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 2rem; padding: 0 0 2.25rem 10rem; }
+  .pubs__panel-inner { display: grid; gap: 2.75rem; padding: 0.5rem 0 3rem 10rem; }
+  .pubs__ref { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 2rem; padding-top: 2rem; border-top: 1px dashed var(--line); }
   .pubs__meta { margin: 0; display: grid; gap: 1rem; align-content: start; }
   .pubs__meta dd { margin: 0.2rem 0 0; }
   .pubs__cite { display: grid; gap: 0.75rem; align-content: start; }
@@ -114,7 +119,8 @@ const boldMe = (a: string) => a.replace("Le, N.", "<strong>Le, N.</strong>");
     .pubs__title { grid-column: 1; }
     .pubs__venue { grid-column: 1; }
     .pubs__sign { grid-column: 2; grid-row: 1; }
-    .pubs__panel-inner { grid-template-columns: minmax(0, 1fr); padding-left: 0; }
+    .pubs__panel-inner { padding-left: 0; }
+    .pubs__ref { grid-template-columns: minmax(0, 1fr); }
   }
   @media (hover: none), (max-width: 860px) { .pubs__preview { display: none; } }
 </style>

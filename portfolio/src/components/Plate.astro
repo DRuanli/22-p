@@ -105,21 +105,6 @@ const ridge = "M0 214 L40 196 L70 204 L110 170 L150 188 L190 150 L230 176 L270 1
         </g>
       )}
 
-      {kind === "classroom" && (
-        <g>
-          <rect width="400" height="320" fill="#cdb895" />
-          <rect x="70" y="34" width="260" height="96" fill="#2f2a22" />
-          {!quiet && <text x="200" y="76" text-anchor="middle" font-family="Archivo, Arial" font-weight="800" font-size="26" fill="#e7dcc6">FLYERS · PET</text>}
-          {!quiet && <text x="200" y="110" text-anchor="middle" font-family="Archivo, Arial" font-weight="800" font-size="26" fill="#e7dcc6">IELTS</text>}
-          {[0, 1, 2, 3].map((r) => {
-            const y = 170 + r * 36, w = 46 + r * 12, n = 4 + (r > 1 ? 1 : 0);
-            return Array.from({ length: n }, (_, c) => (
-              <rect x={200 - (n * (w + 12)) / 2 + c * (w + 12)} y={y} width={w} height={14 + r * 3} fill="#5c4a36" />
-            ));
-          })}
-        </g>
-      )}
-
       <rect width="400" height="320" fill={`url(#${uid}-vig)`} />
     </svg>
   )}

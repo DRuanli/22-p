@@ -1,0 +1,61 @@
+---
+// Horizontal bars, one highlighted (the proposed method) and the rest as grey context.
+// Every bar is labelled directly; a hidden table carries the same numbers for screen readers.
+import type { ChartRow } from "../data/site";
+import { math } from "../lib/typo";
+interface Props { title: string; caption: string; max: number; rows: ChartRow[] }
+const { title, caption, max, rows } = Astro.props;
+const uid = `c${Math.random().toString(36).slice(2, 8)}`;
+---
+<figure class="chart" data-chart aria-labelledby={`${uid}-t`}>
+  <figcaption>
+    <p class="chart__title" id={`${uid}-t`} set:html={math(title)} />
+    <p class="chart__cap muted" set:html={math(caption)} />
+  </figcaption>
+  <ul class="chart__rows" aria-hidden="true">
+    {rows.map((r) => (
+      <li class:list={["chart__row", { "is-em": r.emphasis }]} tabindex="0" data-tip={r.note ? `${r.label}: ${r.display}. ${r.note}` : `${r.label}: ${r.display}`}>
+        <span class="chart__label">{r.label}</span>
+        <span class="chart__track">
+          <span class="chart__bar" data-bar style={`--w:${Math.max(r.value / max, 0)}`}></span>
+          {r.value === 0 && <span class="chart__zero"></span>}
+        </span>
+        <span class="chart__value">{r.display}</span>
+      </li>
+    ))}
+  </ul>
+  <div class="visually-hidden"><table>
+    <caption>{title}. {caption}</caption>
+    <tbody>{rows.map((r) => <tr><th scope="row">{r.label}</th><td>{r.display}{r.note ? `, ${r.note}` : ""}</td></tr>)}</tbody>
+  </table></div>
+  <p class="chart__tip" data-chart-tip aria-hidden="true"></p>
+</figure>
+
+<style>
+  .chart { margin: 0; position: relative; }
+  .chart__title { color: var(--ink); }
+  .chart__cap { font-size: var(--fs-mono-s); margin-top: 0.3rem; max-width: 52ch; }
+  .chart__rows { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; gap: 0.9rem; }
+  .chart__row { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) 5.5rem; align-items: center; gap: 1rem; color: var(--grey); outline-offset: 4px; }
+  .chart__row.is-em { color: var(--ink); }
+  .chart__label { font-size: var(--fs-mono-s); }
+  .chart__track { position: relative; height: 14px; background: linear-gradient(var(--line), var(--line)) left center / 100% 1px no-repeat; }
+  .chart__bar {
+    position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--w) * 100%);
+    background: var(--grey-2); border-radius: 0 4px 4px 0; transform-origin: 0 50%;
+  }
+  .is-em .chart__bar { background: var(--red); }
+  .chart__zero { position: absolute; left: 0; top: -3px; bottom: -3px; width: 2px; background: var(--grey); }
+  .chart__value { text-align: right; font-variant-numeric: tabular-nums; }
+  .chart__row:hover .chart__label, .chart__row:focus-visible .chart__label { color: var(--ink); }
+  .chart__tip {
+    position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; max-width: 22rem;
+    background: var(--ink); color: #fff; padding: 0.6rem 0.8rem; font-size: var(--fs-mono-s);
+    opacity: 0; transform: translateY(4px); transition: opacity 0.2s, transform 0.2s; text-transform: none; letter-spacing: 0;
+  }
+  .chart__tip.is-on { opacity: 1; transform: none; }
+  @media (max-width: 640px) {
+    .chart__row { grid-template-columns: minmax(0, 1fr) 4.5rem; row-gap: 0.4rem; }
+    .chart__label { grid-column: 1 / -1; }
+  }
+</style>

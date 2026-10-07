@@ -5,12 +5,14 @@ import StatRow from "../../components/StatRow.astro";
 import Itinerary from "../../components/Itinerary.astro";
 import Explore from "../../components/Explore.astro";
 import Footer from "../../components/Footer.astro";
-import { routes, type Route } from "../../data/site";
+import PaperDepth from "../../components/PaperDepth.astro";
+import { routes, papers, type Route } from "../../data/site";
 
 export function getStaticPaths() {
   return routes.map((r) => ({ params: { id: r.id }, props: { route: r } }));
 }
 const { route } = Astro.props as { route: Route };
+const paper = papers.find((p) => p.route === route.id);
 const heading = route.months
   ? `${route.months}-month<br />route overview`
   : `Route<br />overview`;
@@ -26,6 +28,19 @@ const heading = route.months
     </section>
     <div class="grid"><div class="c-full dhero__marks" aria-hidden="true"></div></div>
     <div class="dstats"><StatRow items={route.stats} /></div>
+
+    {paper && (
+      <section class="section findings" data-section="Findings" aria-labelledby="findings-h">
+        <div class="grid">
+          <h2 id="findings-h" class="c-head" data-reveal>What the<br />paper found</h2>
+          <p class="c-right findings__venue">
+            <span class="label">{paper.venue} · {paper.year}</span>
+            <span class="findings__title">{paper.title}</span>
+          </p>
+          <div class="c-full findings__body"><PaperDepth paper={paper} /></div>
+        </div>
+      </section>
+    )}
 
     <Itinerary section="Overview" heading={heading} intro={route.overview} rows={route.steps} cta={route.cta} id="overview" />
     <Explore exclude={route.id} />
@@ -46,5 +61,9 @@ const heading = route.months
   .dhero__marks::before { left: -6px; border-left: 1.5px solid var(--red); }
   .dhero__marks::after { right: -6px; border-right: 1.5px solid var(--red); }
   .dstats { margin-top: 1.5rem; }
+  .findings { padding-bottom: 0; }
+  .findings__venue { display: grid; gap: 0.6rem; margin-top: 2rem; }
+  .findings__title { text-transform: none; letter-spacing: 0; line-height: 1.5; }
+  .findings__body { margin-top: 4rem; }
   @media (max-width: 860px) { .dhero__title, .dhero__sub { grid-column: 1 / -1; } }
 </style>

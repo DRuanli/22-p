@@ -1,0 +1,68 @@
+---
+// The deep view of one paper: plain-language summary, headline numbers, the key chart,
+// contributions and data. `compact` is the version inside the Publications list.
+import type { Paper } from "../data/site";
+import BarChart from "./BarChart.astro";
+import { math } from "../lib/typo";
+interface Props { paper: Paper; compact?: boolean }
+const { paper, compact = false } = Astro.props;
+---
+<div class:list={["depth", { "depth--compact": compact }]}>
+  <p class="depth__summary justify" set:html={math(paper.summary)} />
+
+  <dl class="depth__figs">
+    {paper.figures.map((f) => (
+      <div class="depth__fig">
+        <dt class="depth__num" data-count-text>{f.value}</dt>
+        <dd class="depth__lbl" set:html={math(f.label)} />
+      </div>
+    ))}
+  </dl>
+
+  <div class="depth__grid">
+    <div class="depth__chart">
+      <BarChart {...paper.chart} />
+    </div>
+    <div class="depth__side">
+      <p class="label">What the paper contributes</p>
+      <ol class="depth__contrib">
+        {paper.contributions.map((c) => <li set:html={math(c)} />)}
+      </ol>
+      <p class="label depth__datal">Data</p>
+      <ul class="depth__chips">{paper.data.map((d) => <li>{d}</li>)}</ul>
+    </div>
+  </div>
+</div>
+
+<style>
+  .depth { display: grid; gap: 3rem; }
+  .depth__summary { max-width: 62ch; font-size: 0.9rem; line-height: 1.65; }
+  .depth__figs { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+  .depth__fig { padding: 1.25rem 1.25rem 0 0; border-right: 1px solid var(--line); padding-left: 1.25rem; position: relative; }
+  .depth__fig:first-child { padding-left: 0; }
+  .depth__fig:last-child { border-right: 0; }
+  .depth__fig:first-child::before {
+    content: ""; position: absolute; left: 0; top: -1px; width: 14px; height: 10px;
+    border-top: 1.5px solid var(--red); border-left: 1.5px solid var(--red);
+  }
+  .depth__num { font: 800 clamp(2rem, 1.3rem + 2.2vw, 3.2rem)/1 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; white-space: nowrap; }
+  .depth__lbl { margin: 0.75rem 0 0; color: var(--grey); font-size: var(--fs-mono-s); }
+  .depth__grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 3rem; }
+  .depth__contrib { margin: 1rem 0 0; padding: 0; list-style: none; counter-reset: c; display: grid; gap: 0.9rem; }
+  .depth__contrib li { counter-increment: c; position: relative; padding-left: 2.5rem; text-align: justify; }
+  .depth__contrib li::before { content: counter(c, decimal-leading-zero); position: absolute; left: 0; color: var(--red); }
+  .depth__datal { margin-top: 2rem; }
+  .depth__chips { list-style: none; margin: 0.75rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .depth__chips li { border: 1px solid var(--line); padding: 0.35em 0.75em; font-size: var(--fs-mono-s); }
+
+  .depth--compact { gap: 2.25rem; }
+  .depth--compact .depth__num { font-size: clamp(1.6rem, 1.1rem + 1.5vw, 2.4rem); }
+
+  @media (max-width: 960px) {
+    .depth__figs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .depth__fig:nth-child(2) { border-right: 0; }
+    .depth__fig:nth-child(3) { padding-left: 0; }
+    .depth__fig:nth-child(n + 3) { border-top: 1px solid var(--line); padding-top: 1.25rem; margin-top: 1.25rem; }
+    .depth__grid { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

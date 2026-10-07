@@ -278,6 +278,7 @@ if (routesRoot) {
   const teasers = items.map((it) => $(".routes__mobile .justify", it)?.textContent?.trim() ?? "");
   const live = $("[data-route-live]", routesRoot);
   const pin = $("[data-routes-pin]", routesRoot);
+  const frame = $(".routes__frame", routesRoot);
   let active = -1;
   const setActive = (i: number) => {
     if (i === active) return;
@@ -286,6 +287,7 @@ if (routesRoot) {
     links.forEach((a, j) => a.classList.toggle("is-active", j === i));
     if (cta && links[i]) cta.href = links[i].href;
     if (live) live.textContent = teasers[i];
+    if (frame && !reduce && active >= 0) gsap.fromTo(frame, { scale: 1.035, opacity: 0.4 }, { scale: 1, opacity: 1, duration: 0.6, ease: "power3.out", overwrite: true });
     if (!text || !teasers[i]) return;
     if (pin && pin.offsetParent === null) text.textContent = teasers[i]; // pinned layer hidden (mobile)
     else scramble(text, teasers[i], 0.9, false);
@@ -439,6 +441,69 @@ if (pubs) {
     pubs.addEventListener("pointermove", (e) => { xTo(e.clientX); yTo(e.clientY); });
     pubs.addEventListener("pub:open", () => show(false));
   }
+}
+
+/* ---------- numbers that count up, charts that grow ---------- */
+
+// Counts every number inside a string ("3.2×", "−60%", "24,601–29,496") up from zero,
+// keeping its decimals, thousands separators and the surrounding symbols.
+function countUp(el: HTMLElement) {
+  const text = el.textContent ?? "";
+  const parts = text.split(/(\d[\d,]*(?:\.\d+)?)/);
+  const nums = parts.map((p, i) => (i % 2 ? { n: parseFloat(p.replace(/,/g, "")), dec: (p.split(".")[1] ?? "").length, comma: p.includes(",") } : null));
+  const render = (k: number) => parts.map((p, i) => {
+    const m = nums[i];
+    if (!m) return p;
+    const v = (m.n * k).toFixed(m.dec);
+    return m.comma ? Number(v).toLocaleString("en-US", { minimumFractionDigits: m.dec }) : v;
+  }).join("");
+  el.style.minWidth = `${el.offsetWidth}px`; // no width jitter while digits change
+  const o = { k: 0 };
+  el.textContent = render(0);
+  gsap.to(o, { k: 1, duration: 1.6, ease: "power3.out", onUpdate: () => { el.textContent = render(o.k); }, onComplete: () => { el.textContent = text; } });
+}
+$$("[data-count-text]").forEach((el) => {
+  if (reduce) return;
+  ScrollTrigger.create({ trigger: el, start: "top 88%", once: true, onEnter: () => countUp(el) });
+});
+
+$$("[data-chart]").forEach((chart) => {
+  const bars = $$("[data-bar]", chart);
+  if (!reduce) {
+    gsap.set(bars, { scaleX: 0 });
+    ScrollTrigger.create({
+      trigger: chart, start: "top 85%", once: true,
+      onEnter: () => gsap.to(bars, { scaleX: 1, duration: 1.1, stagger: 0.12, ease: "power3.out" }),
+    });
+  }
+  // per-bar tooltip on hover and keyboard focus
+  const tip = $("[data-chart-tip]", chart);
+  if (!tip) return;
+  $$("[data-tip]", chart).forEach((row) => {
+    const show = (on: boolean) => {
+      if (on) {
+        tip.textContent = row.dataset.tip ?? "";
+        const r = row.getBoundingClientRect(), c = chart.getBoundingClientRect();
+        tip.style.left = `${Math.max(0, r.left - c.left)}px`;
+        tip.style.top = `${r.bottom - c.top + 8}px`;
+      }
+      tip.classList.toggle("is-on", on);
+    };
+    row.addEventListener("pointerenter", () => show(true));
+    row.addEventListener("pointerleave", () => show(false));
+    row.addEventListener("focus", () => show(true));
+    row.addEventListener("blur", () => show(false));
+  });
+});
+
+/* ---------- the prediction horizon sweeps across the cohort, then rests on the boundary ---------- */
+
+const horizon = $("[data-horizon]");
+if (horizon && !reduce) {
+  const frame = horizon.parentElement!;
+  gsap.fromTo(horizon,
+    { x: () => -frame.clientWidth * 0.62 },
+    { x: 0, ease: "none", scrollTrigger: { trigger: frame, start: "top 85%", end: "center 45%", scrub: true, invalidateOnRefresh: true } });
 }
 
 /* ---------- nav: which section am I in ---------- */
